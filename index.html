@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Otimizador Imperativo de Prompts</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React 18 -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <!-- Lucide React (UMD) -->
+  <script src="https://unpkg.com/lucide-react@0.383.0/dist/umd/lucide-react.js"></script>
+
+  <!-- Babel Standalone (JSX transpiler) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    :root { color-scheme: light }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0; background: #fafafa; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react">
+    const { useState } = React;
+    const {
+      Sparkles, FileText, Wand2, Copy, Check, Target, Zap,
+      Palette, Shield, Loader2, RotateCcw, ArrowLeft,
+      Lightbulb, AlertCircle, Layers, Sun, Moon, Download,
+      Cpu, Thermometer, Brain, Sliders, Hash
+    } = LucideReact;
+
+    // ─── MOTOR DE OTIMIZAÇÃO ──────────────────────────────────────
+    function buildOptimized(raw) {
+      const text = raw.trim();
+      const detect = {
+        code:     /\b(c[oó]digo|programa[rç]?|app|aplicativo|site|website|react|python|javascript|html|css|api|backend|frontend|software|sistema|componente|fun[cç][aã]o)\b/i.test(text),
+        writing:  /\b(escrev|reda[cç][aã]o|texto|artigo|blog|post|email|copy|conte[uú]d|narrat|livro|cap[ií]tulo)\b/i.test(text),
+        analysis: /\b(analis|avali|pesquis|compar|estud|relat[oó]ri|m[eé]tri|kpi|dashboard)\b/i.test(text),
+        creative: /\b(criativ|design|arte|ilustr|imagem|estilo|visual|logo|marca|brand|ux|ui)\b/i.test(text),
+        data:     /\b(dados|tabela|excel|planilha|gr[aá]fico|chart|csv|sql|estat[ií]stic)\b/i.test(text),
+        strategy: /\b(estrat[eé]g|plano|planejam|roadmap|neg[oó]ci|consultori|mercado)\b/i.test(text),
+        teaching: /\b(did[aá]t|ensin|educ|explic|tutorial|aprend|curso|aula)\b/i.test(text),
+      };
+      let persona = '[DADO A SER INFORMADO]: especialidade exata desejada', domain = 'genérico';
+      if (detect.code)     { persona = 'Engenheiro de Software Sênior com domínio em arquitetura limpa e padrões de projeto'; domain = 'code'; }
+      else if (detect.creative) { persona = 'Diretor Criativo Sênior com foco em design contemporâneo'; domain = 'creative'; }
+      else if (detect.writing)  { persona = 'Redator Profissional com domínio em comunicação persuasiva'; domain = 'writing'; }
+      else if (detect.teaching) { persona = 'Educador Sênior especializado em pedagogia progressiva'; domain = 'teaching'; }
+      else if (detect.analysis) { persona = 'Analista Sênior com formação em pensamento crítico'; domain = 'analysis'; }
+      else if (detect.data)     { persona = 'Cientista de Dados Sênior com domínio em análise estatística'; domain = 'data'; }
+      else if (detect.strategy) { persona = 'Consultor Estratégico Sênior com visão sistêmica'; domain = 'strategy'; }
+
+      let tom = '[DADO A SER INFORMADO]: tom desejado (formal, casual, técnico, persuasivo, etc.)';
+      if (/formal|profissional|corporativ|s[eé]rio/i.test(text))   tom = 'Formal e técnico, com terminologia precisa';
+      else if (/casual|amig[aá]vel|descontra[ií]d|leve/i.test(text)) tom = 'Casual e acessível, sem perder a clareza';
+      else if (/persuasiv|vend|conver|cta/i.test(text))             tom = 'Persuasivo e orientado à ação';
+      else if (/did[aá]t|ensin|educ|explic/i.test(text))            tom = 'Didático, progressivo e centrado no aprendizado';
+
+      const estrutura = [];
+      if (/markdown/i.test(text))        estrutura.push('Markdown semântico com hierarquia clara');
+      if (/lista|bullet|t[oó]pic/i.test(text)) estrutura.push('Listas hierárquicas para enumerações');
+      if (/tabela/i.test(text))          estrutura.push('Tabelas para dados comparativos');
+      if (/json/i.test(text))            estrutura.push('Saída em JSON estritamente válido');
+      if (/c[oó]digo|snippet/i.test(text)) estrutura.push('Blocos de código devidamente delimitados');
+      if (!estrutura.length)             estrutura.push('Markdown semântico com hierarquia clara (H1, H2, H3)');
+
+      const u = [], g = [], m = [], a = [];
+      if (detect.code)     { u.push('Padrões de Clean Code e princípios SOLID','Nomes descritivos e documentação concisa'); g.push('o código seja executável, testável e legível'); m.push('coesão modular e baixo acoplamento'); a.push('introduzir dependências externas desnecessárias'); }
+      if (detect.writing)  { u.push('Estrutura AIDA (Atenção, Interesse, Desejo, Ação)'); g.push('coerência argumentativa do início ao fim'); m.push('voz ativa, frases curtas e parágrafos respiráveis'); a.push('jargão excessivo, redundâncias e clichês'); }
+      if (detect.analysis) { u.push('Frameworks reconhecidos (SWOT, PESTEL, 5 Forças, etc.)'); g.push('citação de fontes verificáveis quando aplicável'); m.push('imparcialidade na exposição dos dados'); a.push('afirmações sem base lógica ou empírica'); }
+      if (detect.creative) { u.push('Princípios de design visual (hierarquia, contraste, ritmo)'); g.push('originalidade conceitual em cada entregável'); m.push('consistência estética e identidade visual'); a.push('reprodução literal de referências sem reinterpretação'); }
+      if (detect.data)     { u.push('Métodos estatísticos rigorosos e validação cruzada'); g.push('transparência metodológica em cada conclusão'); m.push('rastreabilidade dos dados desde a fonte'); a.push('extrapolações além da amostra disponível'); }
+      if (detect.teaching) { u.push('Analogias progressivas do simples ao complexo'); g.push('exemplos concretos para cada conceito abstrato'); m.push('vocabulário acessível ao nível do aprendiz'); a.push('saltos lógicos sem ponte conceitual prévia'); }
+      if (!u.length) { u.push('Linguagem clara, objetiva e tecnicamente precisa','Estrutura lógica de raciocínio passo a passo'); }
+      if (!g.length) { g.push('todas as instruções sejam executadas integralmente','o entregável seja autocontido'); }
+      if (!m.length) { m.push('consistência terminológica ao longo de toda a resposta','foco estrito no escopo definido'); }
+      if (!a.length) { a.push('inventar fatos, dados, números ou referências ausentes','introduzir disclaimers genéricos não solicitados'); }
+
+      return { original: text, persona, tom, estrutura, utilize: u, garanta: g, mantenha: m, abstenha: a, domain };
+    }
+
+    // ─── RECOMENDAÇÕES LLM ────────────────────────────────────────
+    function getRecommendations(domain) {
+      const map = {
+        code:     { modelo:'Claude Opus 4.7 (alta complexidade) ou Sonnet 4.6', temperatura:'0.2 – 0.3', topP:'0.9', maxTokens:'4.096 – 8.192', raciocinio:'Estendido (extended thinking)', justificativa:'Tarefas de código exigem precisão sintática. Temperatura baixa minimiza alucinações; raciocínio estendido melhora arquitetura.' },
+        creative: { modelo:'Claude Opus 4.7', temperatura:'0.7 – 0.9', topP:'0.95', maxTokens:'4.096', raciocinio:'Padrão', justificativa:'Criatividade demanda exploração ampla do espaço latente. Temperatura alta amplia o leque expressivo.' },
+        writing:  { modelo:'Claude Opus 4.7 ou Sonnet 4.6', temperatura:'0.5 – 0.7', topP:'0.9', maxTokens:'2.048 – 4.096', raciocinio:'Padrão', justificativa:'Redação equilibra rigor e fluência. Temperatura mediana mantém coesão sem engessar o estilo.' },
+        analysis: { modelo:'Claude Opus 4.7', temperatura:'0.3 – 0.5', topP:'0.9', maxTokens:'4.096 – 8.192', raciocinio:'Estendido (extended thinking)', justificativa:'Análises críticas exigem encadeamento lógico longo. Raciocínio estendido qualifica conclusões.' },
+        data:     { modelo:'Claude Sonnet 4.6', temperatura:'0.0 – 0.2', topP:'0.85', maxTokens:'4.096', raciocinio:'Estendido (extended thinking)', justificativa:'Dados exigem reprodutibilidade. Temperatura zero garante determinismo nas inferências numéricas.' },
+        strategy: { modelo:'Claude Opus 4.7', temperatura:'0.4 – 0.6', topP:'0.9', maxTokens:'4.096 – 8.192', raciocinio:'Estendido (extended thinking)', justificativa:'Estratégia combina raciocínio sistêmico e exploração de cenários. Temperatura moderada equilibra criatividade e rigor.' },
+        teaching: { modelo:'Claude Sonnet 4.6', temperatura:'0.4 – 0.6', topP:'0.9', maxTokens:'2.048 – 4.096', raciocinio:'Padrão', justificativa:'Conteúdo didático precisa ser previsível mas ilustrativo. Temperatura moderada favorece analogias variadas.' },
+        'genérico':{ modelo:'Claude Sonnet 4.6', temperatura:'0.5 – 0.7', topP:'0.9', maxTokens:'2.048 – 4.096', raciocinio:'Padrão', justificativa:'Configuração balanceada para tarefas gerais sem perfil específico identificado.' },
+      };
+      return map[domain] || map['genérico'];
+    }
+
+    // ─── SERIALIZAÇÃO MARKDOWN ────────────────────────────────────
+    function toMarkdown(d) {
+      return `# 🎯 PROMPT IMPERATIVO ESTRUTURADO
+
+═════════════════════════════════════════════
+## ▣ 1. ESCOPO E OBJETIVO PRINCIPAL
+═════════════════════════════════════════════
+
+▸ Papel Atribuído:
+   Atue como ${d.persona}.
+
+▸ Ideia Original do Usuário:
+   "${d.original}"
+
+▸ Resultado Esperado:
+   [DADO A SER INFORMADO]: formato final do entregável
+
+═════════════════════════════════════════════
+## ▣ 2. DIRETRIZES IMPERATIVAS DE COMPORTAMENTO
+═════════════════════════════════════════════
+
+▸ UTILIZE:
+${d.utilize.map(u => `   • ${u}`).join('\n')}
+
+▸ GARANTA QUE:
+${d.garanta.map(g => `   • ${g}`).join('\n')}
+
+▸ MANTENHA:
+${d.mantenha.map(m => `   • ${m}`).join('\n')}
+
+▸ ABSTENHA-SE DE:
+${d.abstenha.map(a => `   • ${a}`).join('\n')}
+
+═════════════════════════════════════════════
+## ▣ 3. REGRAS DE FORMATAÇÃO E DESIGN VISUAL
+═════════════════════════════════════════════
+
+▸ Estrutura de Saída:
+${d.estrutura.map(e => `   • ${e}`).join('\n')}
+
+▸ Tom de Comunicação:
+   ${d.tom}
+
+▸ Comprimento: [DADO A SER INFORMADO]
+▸ Idioma: Português (Brasil)
+
+═════════════════════════════════════════════
+## ▣ 4. SEGREGAÇÃO DE CONTEXTO E RESTRIÇÕES
+═════════════════════════════════════════════
+
+▸ Restrições:
+   • NÃO inventar dados sensíveis ou informações pessoais.
+   • NÃO ultrapassar o escopo definido.
+   • SE houver ambiguidade, listar suposições antes de responder.
+
+▸ Variáveis Externas:
+   • [DADO A SER INFORMADO]: público-alvo
+   • [DADO A SER INFORMADO]: profundidade técnica
+   • [DADO A SER INFORMADO]: referências ou amostras
+   • [DADO A SER INFORMADO]: critérios de sucesso
+
+═════════════════════════════════════════════
+              ✦ FIM DAS DIRETRIZES ✦
+═════════════════════════════════════════════`;
+    }
+
+    // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────
+    function PromptOptimizer() {
+      const [theme, setTheme]           = useState('light');
+      const [activeTab, setActiveTab]   = useState('input');
+      const [rawInput, setRawInput]     = useState('');
+      const [optimized, setOptimized]   = useState(null);
+      const [isProcessing, setProcessing] = useState(false);
+      const [copied, setCopied]         = useState(false);
+      const [exported, setExported]     = useState(false);
+
+      const isDark = theme === 'dark';
+
+      const handleOptimize = () => {
+        if (!rawInput.trim() || isProcessing) return;
+        setProcessing(true);
+        setTimeout(() => { setOptimized(buildOptimized(rawInput)); setProcessing(false); setActiveTab('output'); }, 650);
+      };
+
+      const handleCopy = async () => {
+        if (!optimized) return;
+        const md = toMarkdown(optimized);
+        try { await navigator.clipboard.writeText(md); }
+        catch { const t = document.createElement('textarea'); t.value = md; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch {} document.body.removeChild(t); }
+        setCopied(true); setTimeout(() => setCopied(false), 2000);
+      };
+
+      const handleExport = () => {
+        if (!optimized) return;
+        const md = toMarkdown(optimized);
+        const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `prompt-otimizado-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.md`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        setExported(true); setTimeout(() => setExported(false), 2000);
+      };
+
+      const handleReset = () => { setRawInput(''); setOptimized(null); setCopied(false); setExported(false); setActiveTab('input'); };
+      const recs = optimized ? getRecommendations(optimized.domain) : null;
+
+      const CSS = `
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+        .font-mont { font-family:'Montserrat',system-ui,sans-serif; }
+        .theme-light {
+          --bg:#fafafa; --card:rgba(255,255,255,0.75); --card-i:rgba(250,250,250,0.75);
+          --brd:#e4e4e7; --brd-s:#f4f4f5; --tx:#18181b; --tx-m:#52525b; --tx-d:#71717a;
+          --af:#f59e0b; --at:#ea580c; --as:#d97706; --abg:rgba(245,158,11,.08); --abr:rgba(245,158,11,.25);
+          --ibg:#fff; --sb:#f4f4f5; --sbh:#e4e4e7; --st:#3f3f46; --sbr:#d4d4d8;
+          --amb1:rgba(245,158,11,.10); --amb2:rgba(234,88,12,.10);
+          --du:#b45309; --dg:#c2410c; --dm:#a16207; --da:#be123c;
+          --ok-bg:rgba(34,197,94,.12); --ok-br:rgba(34,197,94,.35); --ok:#15803d;
+        }
+        .theme-dark {
+          --bg:#1a1b26; --card:rgba(36,40,59,.55); --card-i:rgba(26,27,38,.55);
+          --brd:#3b4261; --brd-s:#292e42; --tx:#c0caf5; --tx-m:#a9b1d6; --tx-d:#565f89;
+          --af:#7aa2f7; --at:#bb9af7; --as:#7aa2f7; --abg:rgba(122,162,247,.10); --abr:rgba(122,162,247,.30);
+          --ibg:rgba(26,27,38,.7); --sb:rgba(36,40,59,.6); --sbh:rgba(36,40,59,.95); --st:#a9b1d6; --sbr:#3b4261;
+          --amb1:rgba(122,162,247,.10); --amb2:rgba(187,154,247,.10);
+          --du:#7aa2f7; --dg:#9ece6a; --dm:#e0af68; --da:#f7768e;
+          --ok-bg:rgba(158,206,106,.12); --ok-br:rgba(158,206,106,.35); --ok:#9ece6a;
+        }
+        .tr { transition: background-color 250ms,color 250ms; }
+        .qf { animation: qfade .45s ease-out both; }
+        .qf:nth-child(1){animation-delay:0ms} .qf:nth-child(2){animation-delay:70ms}
+        .qf:nth-child(3){animation-delay:140ms} .qf:nth-child(4){animation-delay:210ms}
+        .qf:nth-child(5){animation-delay:280ms}
+        @keyframes qfade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .spin { animation: spin .8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        textarea:focus { outline: none; }
+      `;
+
+      return (
+        <>
+          <style>{CSS}</style>
+          <div className={`font-mont tr ${isDark ? 'theme-dark' : 'theme-light'}`}
+               style={{ minHeight:'100vh', background:'var(--bg)', color:'var(--tx)', overflowX:'hidden', position:'relative' }}>
+
+            {/* Ambient */}
+            <div style={{ position:'fixed', inset:0, pointerEvents:'none', overflow:'hidden' }}>
+              <div style={{ position:'absolute', top:'-10rem', right:'-10rem', width:'32rem', height:'32rem', borderRadius:'9999px', filter:'blur(80px)', background:'var(--amb1)' }} />
+              <div style={{ position:'absolute', bottom:'-10rem', left:'-10rem', width:'32rem', height:'32rem', borderRadius:'9999px', filter:'blur(80px)', background:'var(--amb2)' }} />
+            </div>
+
+            <div style={{ position:'relative', maxWidth:'56rem', margin:'0 auto', padding:'2rem 1rem' }}>
+
+              {/* HEADER */}
+              <header style={{ marginBottom:'2rem', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:'0.75rem' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'0.75rem' }}>
+                  <div style={{ width:'2.75rem', height:'2.75rem', borderRadius:'0.75rem', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(135deg,var(--af),var(--at))', boxShadow:'0 10px 30px -10px var(--af)', flexShrink:0 }}>
+                    <Sparkles size={20} color="#fff" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize:'1.25rem', fontWeight:600, letterSpacing:'-0.02em', lineHeight:1.2 }}>Otimizador Imperativo de Prompts</div>
+                    <div style={{ fontSize:'0.75rem', color:'var(--tx-m)' }}>Meta-Prompting Estruturado · 4 Quadrantes</div>
+                  </div>
+                </div>
+                <button onClick={() => setTheme(t => t==='light'?'dark':'light')}
+                        title={isDark ? 'Tema claro' : 'Tokyo Midnight'}
+                        style={{ flexShrink:0, width:'2.5rem', height:'2.5rem', borderRadius:'0.75rem', border:'1px solid var(--brd)', background:'var(--card)', backdropFilter:'blur(8px)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--tx-m)', transition:'all 150ms' }}>
+                  {isDark ? <Sun size={16} /> : <Moon size={16} />}
+                </button>
+              </header>
+
+              {/* TABS */}
+              <div style={{ display:'flex', gap:'0.25rem', padding:'0.25rem', marginBottom:'1.25rem', background:'var(--card)', border:'1px solid var(--brd)', borderRadius:'0.75rem', backdropFilter:'blur(8px)' }}>
+                {[['input','input',<FileText size={16} />,'Entrada Bruta'],['output','output',<Layers size={16} />,'Prompt Estruturado']].map(([key,,icon,label]) => (
+                  <button key={key} onClick={() => key==='output' ? (optimized && setActiveTab('output')) : setActiveTab('input')}
+                          disabled={key==='output' && !optimized}
+                          style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', padding:'0.625rem 1rem', borderRadius:'0.5rem', border:'none', cursor: key==='output' && !optimized ? 'not-allowed' : 'pointer', fontFamily:'inherit', fontSize:'0.8rem', fontWeight:500, letterSpacing:'-0.01em', opacity: key==='output' && !optimized ? 0.4 : 1, transition:'all 200ms',
+                            ...(activeTab===key && (key==='input' || optimized)
+                              ? { background:`linear-gradient(to right,var(--af),var(--at))`, color:'#fff', boxShadow:'0 6px 20px -8px var(--af)' }
+                              : { background:'transparent', color:'var(--tx-m)' }) }}>
+                    {icon}{label}
+                  </button>
+                ))}
+              </div>
+
+              {/* MAIN CARD */}
+              <div style={{ background:'var(--card)', border:'1px solid var(--brd)', borderRadius:'1rem', padding:'1.5rem', backdropFilter:'blur(12px)', boxShadow: isDark ? '0 25px 50px -12px rgba(0,0,0,.5)' : '0 25px 50px -12px rgba(0,0,0,.08)' }}>
+
+                {activeTab === 'input' ? (
+                  <>
+                    <div style={{ marginBottom:'0.75rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                      <span style={{ fontSize:'0.875rem', fontWeight:500, letterSpacing:'-0.01em' }}>Sua ideia, comando ou rascunho</span>
+                      <span style={{ fontSize:'0.7rem', color:'var(--tx-d)', fontVariantNumeric:'tabular-nums' }}>{rawInput.length.toLocaleString('pt-BR')} caracteres</span>
+                    </div>
+                    <textarea value={rawInput} onChange={e => setRawInput(e.target.value)} spellCheck={false}
+                              placeholder="Cole aqui um rascunho de comando, uma ideia solta ou um esboço caótico. Quanto mais contexto, melhor a otimização..."
+                              onFocus={e => { e.target.style.borderColor='var(--as)'; e.target.style.boxShadow='0 0 0 3px var(--abg)'; }}
+                              onBlur={e => { e.target.style.borderColor='var(--brd)'; e.target.style.boxShadow='none'; }}
+                              style={{ width:'100%', height:'16rem', padding:'0.75rem 1rem', background:'var(--ibg)', border:'1px solid var(--brd)', borderRadius:'0.75rem', color:'var(--tx)', fontSize:'0.875rem', lineHeight:1.6, letterSpacing:'-0.01em', resize:'vertical', fontFamily:'inherit', transition:'border-color 200ms' }} />
+                    <div style={{ marginTop:'1.25rem', display:'flex', flexWrap:'wrap', gap:'0.75rem' }}>
+                      <button onClick={handleOptimize} disabled={!rawInput.trim() || isProcessing}
+                              style={{ flex:1, minWidth:'12rem', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', padding:'0.75rem 1.25rem', background:`linear-gradient(to right,var(--af),var(--at))`, border:'none', borderRadius:'0.75rem', color:'#fff', fontFamily:'inherit', fontSize:'0.875rem', fontWeight:600, letterSpacing:'-0.01em', cursor: !rawInput.trim()||isProcessing ? 'not-allowed' : 'pointer', opacity: !rawInput.trim()||isProcessing ? 0.4 : 1, boxShadow:'0 10px 25px -10px var(--af)', transition:'opacity 200ms' }}>
+                        {isProcessing ? <><Loader2 size={16} className="spin" />Estruturando...</> : <><Wand2 size={16} />Otimizar Diretrizes</>}
+                      </button>
+                      {rawInput && (
+                        <button onClick={handleReset}
+                                style={{ display:'flex', alignItems:'center', gap:'0.5rem', padding:'0.75rem 1.25rem', background:'var(--sb)', border:'1px solid var(--sbr)', borderRadius:'0.75rem', color:'var(--st)', fontFamily:'inherit', fontSize:'0.875rem', fontWeight:500, cursor:'pointer', transition:'background 200ms' }}>
+                          <RotateCcw size={16} />Limpar
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ marginTop:'1.25rem', padding:'0.875rem', background:'var(--abg)', border:'1px solid var(--abr)', borderRadius:'0.75rem', display:'flex', gap:'0.75rem' }}>
+                      <Lightbulb size={18} style={{ color:'var(--as)', flexShrink:0, marginTop:'0.125rem' }} />
+                      <p style={{ margin:0, fontSize:'0.75rem', color:'var(--tx-m)', lineHeight:1.6 }}>
+                        <span style={{ color:'var(--as)', fontWeight:600 }}>Como funciona: </span>
+                        O motor analisa seu texto, infere o domínio, atribui um papel, gera diretrizes imperativas e marca dados ausentes como <code style={{ color:'var(--as)', background:'var(--abg)', border:'1px solid var(--abr)', padding:'0 0.375rem', borderRadius:'0.25rem', fontSize:'0.7rem' }}>[DADO A SER INFORMADO]</code>. Após otimizar, veja também os parâmetros recomendados do LLM.
+                      </p>
+                    </div>
+                  </>
+                ) : optimized ? (
+                  <>
+                    {/* Output toolbar */}
+                    <div style={{ marginBottom:'1.25rem', display:'flex', flexWrap:'wrap', alignItems:'center', gap:'0.5rem', justifyContent:'space-between' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}>
+                        <div style={{ width:'0.5rem', height:'0.5rem', borderRadius:'9999px', background:'var(--ok)', animation:'qfade 1s ease infinite alternate' }} />
+                        <span style={{ fontSize:'0.8rem', fontWeight:500 }}>Estruturado em 4 quadrantes</span>
+                      </div>
+                      <div style={{ display:'flex', gap:'0.5rem', flexWrap:'wrap' }}>
+                        <button onClick={handleExport}
+                                style={{ display:'flex', alignItems:'center', gap:'0.375rem', padding:'0.5rem 0.875rem', borderRadius:'0.5rem', border:'1px solid var(--sbr)', background: exported ? 'var(--ok-bg)' : 'var(--sb)', color: exported ? 'var(--ok)' : 'var(--st)', fontFamily:'inherit', fontSize:'0.75rem', fontWeight:500, cursor:'pointer', transition:'all 200ms' }}>
+                          {exported ? <><Check size={14} />Baixado</> : <><Download size={14} />Exportar .md</>}
+                        </button>
+                        <button onClick={handleCopy}
+                                style={{ display:'flex', alignItems:'center', gap:'0.375rem', padding:'0.5rem 0.875rem', borderRadius:'0.5rem', border: copied ? '1px solid var(--ok-br)' : 'none', background: copied ? 'var(--ok-bg)' : `linear-gradient(to right,var(--af),var(--at))`, color: copied ? 'var(--ok)' : '#fff', fontFamily:'inherit', fontSize:'0.75rem', fontWeight:600, cursor:'pointer', boxShadow: copied ? 'none' : '0 6px 20px -8px var(--af)', transition:'all 200ms' }}>
+                          {copied ? <><Check size={14} />Copiado!</> : <><Copy size={14} />Copiar Prompt</>}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 4 Quadrantes */}
+                    <div style={{ display:'flex', flexDirection:'column', gap:'0.75rem' }}>
+                      <Quadrant num="1" icon={<Target size={14} />} title="Escopo e Objetivo Principal">
+                        <Field label="Papel Atribuído">Atue como <span style={{ color:'var(--as)', fontWeight:500 }}>{optimized.persona}</span>.</Field>
+                        <Field label="Ideia Original"><em style={{ color:'var(--tx-m)' }}>"{optimized.original}"</em></Field>
+                        <Field label="Resultado Esperado"><Chip>formato final do entregável</Chip></Field>
+                      </Quadrant>
+                      <Quadrant num="2" icon={<Zap size={14} />} title="Diretrizes Imperativas de Comportamento">
+                        <DBlock verb="UTILIZE"     items={optimized.utilize} cssVar="--du" />
+                        <DBlock verb="GARANTA"     items={optimized.garanta} cssVar="--dg" />
+                        <DBlock verb="MANTENHA"    items={optimized.mantenha} cssVar="--dm" />
+                        <DBlock verb="ABSTENHA-SE" items={optimized.abstenha} cssVar="--da" />
+                      </Quadrant>
+                      <Quadrant num="3" icon={<Palette size={14} />} title="Regras de Formatação e Design Visual">
+                        <Field label="Estrutura de Saída">
+                          <ul style={{ margin:0, padding:0, listStyle:'none', display:'flex', flexDirection:'column', gap:'0.25rem' }}>
+                            {optimized.estrutura.map((e,i) => <li key={i} style={{ display:'flex', gap:'0.5rem' }}><span style={{ color:'var(--as)' }}>•</span>{e}</li>)}
+                          </ul>
+                        </Field>
+                        <Field label="Tom">{optimized.tom.startsWith('[DADO') ? <Chip>tom desejado</Chip> : optimized.tom}</Field>
+                        <Field label="Comprimento"><Chip>extensão aproximada</Chip></Field>
+                        <Field label="Idioma">Português (Brasil), salvo indicação contrária.</Field>
+                      </Quadrant>
+                      <Quadrant num="4" icon={<Shield size={14} />} title="Segregação de Contexto e Restrições">
+                        <Field label="Restrições Críticas">
+                          <ul style={{ margin:0, padding:0, listStyle:'none', display:'flex', flexDirection:'column', gap:'0.375rem' }}>
+                            <li style={{ display:'flex', gap:'0.5rem' }}><span style={{ color:'var(--da)', fontWeight:700 }}>×</span><span>NÃO inventar dados sensíveis ou informações pessoais.</span></li>
+                            <li style={{ display:'flex', gap:'0.5rem' }}><span style={{ color:'var(--da)', fontWeight:700 }}>×</span><span>NÃO ultrapassar o escopo definido.</span></li>
+                            <li style={{ display:'flex', gap:'0.5rem' }}><span style={{ color:'var(--as)', fontWeight:700 }}>!</span><span>SE houver ambiguidade, listar suposições antes de responder.</span></li>
+                          </ul>
+                        </Field>
+                        <Field label="Variáveis Externas">
+                          <div style={{ display:'flex', flexDirection:'column', gap:'0.375rem' }}>
+                            {['público-alvo específico','nível de profundidade técnica','referências ou amostras','critérios de sucesso'].map((v,i) => <Chip key={i}>{v}</Chip>)}
+                          </div>
+                        </Field>
+                      </Quadrant>
+
+                      {/* RECOMENDAÇÕES LLM */}
+                      {recs && (
+                        <div className="qf" style={{ background:'var(--card-i)', border:'1px solid var(--abr)', borderRadius:'0.75rem', overflow:'hidden' }}>
+                          <div style={{ display:'flex', alignItems:'center', gap:'0.75rem', padding:'0.75rem 1rem', borderBottom:'1px solid var(--brd-s)' }}>
+                            <Cpu size={14} style={{ color:'var(--as)' }} />
+                            <span style={{ fontSize:'0.8rem', fontWeight:600, flex:1 }}>Configurações recomendadas para o LLM</span>
+                            <span style={{ fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:700, padding:'0.125rem 0.5rem', borderRadius:'9999px', color:'var(--as)', background:'var(--abg)', border:'1px solid var(--abr)' }}>Extra · fora do prompt</span>
+                          </div>
+                          <div style={{ padding:'0.875rem', display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(10rem,1fr))', gap:'0.625rem' }}>
+                            {[
+                              [<Cpu size={12}/>, 'Modelo', recs.modelo, false],
+                              [<Thermometer size={12}/>, 'Temperatura', recs.temperatura, true],
+                              [<Sliders size={12}/>, 'Top-p', recs.topP, true],
+                              [<Hash size={12}/>, 'Max Tokens', recs.maxTokens, true],
+                              [<Brain size={12}/>, 'Raciocínio', recs.raciocinio, false],
+                              [<Layers size={12}/>, 'Perfil', optimized.domain === 'genérico' ? 'Genérico' : optimized.domain.charAt(0).toUpperCase()+optimized.domain.slice(1), false],
+                            ].map(([ico,lbl,val,mono],i) => (
+                              <div key={i} style={{ background:'var(--ibg)', border:'1px solid var(--brd-s)', borderRadius:'0.5rem', padding:'0.625rem 0.75rem' }}>
+                                <div style={{ display:'flex', alignItems:'center', gap:'0.375rem', marginBottom:'0.375rem', fontSize:'0.65rem', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:700, color:'var(--tx-d)' }}>
+                                  <span style={{ color:'var(--as)' }}>{ico}</span>{lbl}
+                                </div>
+                                <div style={{ fontSize:'0.8rem', fontWeight:500, fontFamily: mono ? 'monospace' : 'inherit' }}>{val}</div>
+                              </div>
+                            ))}
+                          </div>
+                          <div style={{ padding:'0 0.875rem 0.875rem' }}>
+                            <div style={{ fontSize:'0.65rem', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:700, color:'var(--tx-d)', marginBottom:'0.375rem' }}>Justificativa</div>
+                            <p style={{ margin:0, fontSize:'0.775rem', color:'var(--tx-m)', lineHeight:1.6 }}>{recs.justificativa}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer actions */}
+                    <div style={{ marginTop:'1.25rem', display:'flex', flexWrap:'wrap', gap:'0.75rem' }}>
+                      <button onClick={() => setActiveTab('input')}
+                              style={{ flex:1, minWidth:'9rem', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', padding:'0.75rem', background:'var(--sb)', border:'1px solid var(--sbr)', borderRadius:'0.75rem', color:'var(--st)', fontFamily:'inherit', fontSize:'0.875rem', fontWeight:500, cursor:'pointer' }}>
+                        <ArrowLeft size={16} />Editar entrada
+                      </button>
+                      <button onClick={handleReset}
+                              style={{ display:'flex', alignItems:'center', gap:'0.5rem', padding:'0.75rem 1.25rem', background:'var(--sb)', border:'1px solid var(--sbr)', borderRadius:'0.75rem', color:'var(--st)', fontFamily:'inherit', fontSize:'0.875rem', fontWeight:500, cursor:'pointer' }}>
+                        <RotateCcw size={16} />Recomeçar
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ padding:'4rem 0', textAlign:'center' }}>
+                    <AlertCircle size={48} style={{ color:'var(--tx-d)', margin:'0 auto 1rem' }} />
+                    <p style={{ color:'var(--tx-m)', fontSize:'0.875rem', margin:0, lineHeight:1.6 }}>
+                      Nenhum prompt otimizado ainda.<br />
+                      Insira uma ideia na aba <span style={{ color:'var(--tx)' }}>"Entrada Bruta"</span>.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <footer style={{ marginTop:'2rem', textAlign:'center', fontSize:'0.7rem', color:'var(--tx-d)' }}>
+                Engenharia de Prompts · Imperativos Acionáveis · Conformidade WCAG AA
+              </footer>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    // ─── SUBCOMPONENTES ───────────────────────────────────────────
+    function Quadrant({ num, icon, title, children }) {
+      return (
+        <div className="qf" style={{ background:'var(--card-i)', border:'1px solid var(--brd-s)', borderRadius:'0.75rem', overflow:'hidden' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'0.625rem', padding:'0.625rem 1rem', borderBottom:'1px solid var(--brd-s)' }}>
+            <div style={{ width:'1.625rem', height:'1.625rem', borderRadius:'0.375rem', background:`linear-gradient(135deg,var(--af),var(--at))`, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:'0.7rem', boxShadow:'0 4px 12px -4px var(--af)', flexShrink:0 }}>{num}</div>
+            <span style={{ color:'var(--as)' }}>{icon}</span>
+            <span style={{ fontSize:'0.8rem', fontWeight:600, letterSpacing:'-0.01em' }}>{title}</span>
+          </div>
+          <div style={{ padding:'0.875rem', display:'flex', flexDirection:'column', gap:'0.875rem', fontSize:'0.8rem', lineHeight:1.6, color:'var(--tx-m)' }}>
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    function Field({ label, children }) {
+      return (
+        <div>
+          <div style={{ fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.12em', fontWeight:700, color:'var(--tx-d)', marginBottom:'0.375rem' }}>{label}</div>
+          <div style={{ color:'var(--tx)' }}>{children}</div>
+        </div>
+      );
+    }
+
+    function DBlock({ verb, items, cssVar }) {
+      return (
+        <div>
+          <div style={{ fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.12em', fontWeight:700, color:`var(${cssVar})`, marginBottom:'0.375rem' }}>▸ {verb}:</div>
+          <ul style={{ margin:0, padding:0, listStyle:'none', display:'flex', flexDirection:'column', gap:'0.25rem' }}>
+            {items.map((it,i) => (
+              <li key={i} style={{ display:'flex', gap:'0.5rem', color:'var(--tx-m)' }}>
+                <span style={{ color:`var(${cssVar})`, flexShrink:0 }}>•</span><span>{it}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+
+    function Chip({ children }) {
+      return (
+        <code style={{ display:'inline-block', fontSize:'0.7rem', padding:'0.125rem 0.5rem', borderRadius:'0.25rem', fontFamily:'monospace', color:'var(--as)', background:'var(--abg)', border:'1px solid var(--abr)' }}>
+          [DADO A SER INFORMADO]: {children}
+        </code>
+      );
+    }
+
+    // ─── MOUNT ────────────────────────────────────────────────────
+    ReactDOM.createRoot(document.getElementById('root')).render(<PromptOptimizer />);
+  </script>
+</body>
+</html>
