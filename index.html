@@ -52,7 +52,7 @@
       Sparkles, FileText, Wand2, Copy, Check, Target, Zap,
       Palette, Shield, Loader2, RotateCcw, ArrowLeft,
       Lightbulb, AlertCircle, Layers, Sun, Moon, Download,
-      Cpu, Thermometer, Brain, Sliders, Hash, Coins
+      Cpu, Thermometer, Brain, Sliders, Hash, Coins, Terminal, Bot, BookOpen, ExternalLink
     } = LucideReact;
 
     // ─── EXEMPLOS RÁPIDOS ─────────────────────────────────────────
@@ -62,6 +62,7 @@
       { label: 'Análise',   text: 'analisar os dados de churn do último trimestre e comparar com as metas em uma tabela' },
       { label: 'Marketing', text: 'campanha de anúncios para o lançamento de um curso online de finanças pessoais' },
       { label: 'Jurídico',  text: 'minutar uma cláusula de confidencialidade para contrato de prestação de serviços' },
+      { label: 'Claude Code', text: 'criar um arquivo CLAUDE.md com padrões de código, comandos de build e checklist de revisão para um projeto Next.js' },
     ];
 
     // ─── MOTOR DE OTIMIZAÇÃO ──────────────────────────────────────
@@ -123,15 +124,15 @@
     // ─── RECOMENDAÇÕES LLM ────────────────────────────────────────
     function getRecommendations(domain) {
       const map = {
-        code:      { modelo:'Claude Opus 4.7 (alta complexidade) ou Sonnet 4.6', temperatura:'0.2 – 0.3', topP:'0.9', maxTokens:'4.096 – 8.192', raciocinio:'Estendido (extended thinking)', justificativa:'Tarefas de código exigem precisão sintática. Temperatura baixa minimiza alucinações; raciocínio estendido melhora a arquitetura.' },
-        legal:     { modelo:'Claude Opus 4.7', temperatura:'0.1 – 0.3', topP:'0.85', maxTokens:'4.096 – 8.192', raciocinio:'Estendido (extended thinking)', justificativa:'Textos jurídicos exigem precisão terminológica e rastreabilidade. Temperatura baixa reduz alucinação normativa; raciocínio estendido apoia a argumentação.' },
-        marketing: { modelo:'Claude Sonnet 4.6 ou Opus 4.7', temperatura:'0.6 – 0.8', topP:'0.95', maxTokens:'2.048 – 4.096', raciocinio:'Padrão', justificativa:'Copy de marketing demanda criatividade persuasiva e variação de ângulos. Temperatura alta amplia as opções de headline e CTA.' },
-        creative:  { modelo:'Claude Opus 4.7', temperatura:'0.7 – 0.9', topP:'0.95', maxTokens:'4.096', raciocinio:'Padrão', justificativa:'Criatividade demanda exploração ampla do espaço latente. Temperatura alta amplia o leque expressivo.' },
-        writing:   { modelo:'Claude Opus 4.7 ou Sonnet 4.6', temperatura:'0.5 – 0.7', topP:'0.9', maxTokens:'2.048 – 4.096', raciocinio:'Padrão', justificativa:'Redação equilibra rigor e fluência. Temperatura mediana mantém coesão sem engessar o estilo.' },
-        analysis:  { modelo:'Claude Opus 4.7', temperatura:'0.3 – 0.5', topP:'0.9', maxTokens:'4.096 – 8.192', raciocinio:'Estendido (extended thinking)', justificativa:'Análises críticas exigem encadeamento lógico longo. Raciocínio estendido qualifica conclusões.' },
-        data:      { modelo:'Claude Sonnet 4.6', temperatura:'0.0 – 0.2', topP:'0.85', maxTokens:'4.096', raciocinio:'Estendido (extended thinking)', justificativa:'Dados exigem reprodutibilidade. Temperatura zero garante determinismo nas inferências numéricas.' },
-        strategy:  { modelo:'Claude Opus 4.7', temperatura:'0.4 – 0.6', topP:'0.9', maxTokens:'4.096 – 8.192', raciocinio:'Estendido (extended thinking)', justificativa:'Estratégia combina raciocínio sistêmico e exploração de cenários. Temperatura moderada equilibra criatividade e rigor.' },
-        teaching:  { modelo:'Claude Sonnet 4.6', temperatura:'0.4 – 0.6', topP:'0.9', maxTokens:'2.048 – 4.096', raciocinio:'Padrão', justificativa:'Conteúdo didático precisa ser previsível mas ilustrativo. Temperatura moderada favorece analogias variadas.' },
+        code:      { modelo:'Claude Opus 4.8 (alta complexidade) ou Sonnet 4.6', temperatura:'0.2 – 0.3', topP:'0.9', maxTokens:'8.192 – 16.384', raciocinio:'Adaptativo · effort "high"', justificativa:'Tarefas de código exigem precisão sintática. Temperatura baixa minimiza alucinações; o Opus 4.8 usa raciocínio adaptativo (parâmetro effort, padrão "high") para planejar a arquitetura.' },
+        legal:     { modelo:'Claude Opus 4.8', temperatura:'0.1 – 0.3', topP:'0.85', maxTokens:'8.192 – 16.384', raciocinio:'Adaptativo · effort "high"', justificativa:'Textos jurídicos exigem precisão terminológica e rastreabilidade. Temperatura baixa reduz alucinação normativa; o raciocínio adaptativo aprofunda a argumentação.' },
+        marketing: { modelo:'Claude Sonnet 4.6 ou Opus 4.8', temperatura:'0.6 – 0.8', topP:'0.95', maxTokens:'2.048 – 4.096', raciocinio:'Padrão', justificativa:'Copy de marketing demanda criatividade persuasiva e variação de ângulos. Temperatura alta amplia as opções de headline e CTA.' },
+        creative:  { modelo:'Claude Opus 4.8', temperatura:'0.7 – 0.9', topP:'0.95', maxTokens:'4.096', raciocinio:'Padrão', justificativa:'Criatividade demanda exploração ampla do espaço latente. Temperatura alta amplia o leque expressivo.' },
+        writing:   { modelo:'Claude Sonnet 4.6 ou Opus 4.8', temperatura:'0.5 – 0.7', topP:'0.9', maxTokens:'2.048 – 4.096', raciocinio:'Extended thinking (Sonnet)', justificativa:'Redação equilibra rigor e fluência. Temperatura mediana mantém coesão sem engessar o estilo.' },
+        analysis:  { modelo:'Claude Opus 4.8', temperatura:'0.3 – 0.5', topP:'0.9', maxTokens:'8.192 – 16.384', raciocinio:'Adaptativo · effort "high"', justificativa:'Análises críticas exigem encadeamento lógico longo. O raciocínio adaptativo qualifica as conclusões.' },
+        data:      { modelo:'Claude Sonnet 4.6', temperatura:'0.0 – 0.2', topP:'0.85', maxTokens:'4.096', raciocinio:'Extended thinking', justificativa:'Dados exigem reprodutibilidade. Temperatura zero garante determinismo nas inferências numéricas.' },
+        strategy:  { modelo:'Claude Opus 4.8', temperatura:'0.4 – 0.6', topP:'0.9', maxTokens:'8.192 – 16.384', raciocinio:'Adaptativo · effort "high"', justificativa:'Estratégia combina raciocínio sistêmico e exploração de cenários. Temperatura moderada equilibra criatividade e rigor.' },
+        teaching:  { modelo:'Claude Haiku 4.5 ou Sonnet 4.6', temperatura:'0.4 – 0.6', topP:'0.9', maxTokens:'2.048 – 4.096', raciocinio:'Extended thinking', justificativa:'Conteúdo didático precisa ser previsível mas ilustrativo. O Haiku 4.5 entrega baixa latência e custo; a temperatura moderada favorece analogias variadas.' },
         'genérico':{ modelo:'Claude Sonnet 4.6', temperatura:'0.5 – 0.7', topP:'0.9', maxTokens:'2.048 – 4.096', raciocinio:'Padrão', justificativa:'Configuração balanceada para tarefas gerais sem perfil específico identificado.' },
       };
       return map[domain] || map['genérico'];
@@ -142,6 +143,34 @@
       writing:'Redação', analysis:'Análise', data:'Dados', strategy:'Estratégia',
       teaching:'Didático', 'genérico':'Genérico',
     };
+
+    // ─── GUIA CLAUDE & CLAUDE CODE (dados oficiais, mai/2026) ─────
+    // Fonte: platform.claude.com/docs (modelos) e code.claude.com/docs (Claude Code)
+    const CLAUDE_MODELS = [
+      { nome:'Claude Opus 4.8',  tier:'Opus',   melhor:'Raciocínio complexo e coding agêntico de longo horizonte', contexto:'1M tokens', saida:'128k', cutoff:'jan/2026', preco:'US$ 5 / 25 por MTok', raciocinio:'Adaptativo (parâmetro effort, padrão "high")' },
+      { nome:'Claude Sonnet 4.6', tier:'Sonnet', melhor:'Melhor equilíbrio entre velocidade e inteligência',        contexto:'1M tokens', saida:'64k',  cutoff:'ago/2025', preco:'US$ 3 / 15 por MTok', raciocinio:'Extended thinking + adaptativo' },
+      { nome:'Claude Haiku 4.5',  tier:'Haiku',  melhor:'O mais rápido, com inteligência quase de fronteira',        contexto:'200k tokens', saida:'64k', cutoff:'fev/2025', preco:'US$ 1 / 5 por MTok',  raciocinio:'Extended thinking' },
+    ];
+
+    const CLAUDE_CODE = [
+      { titulo:'CLAUDE.md + memória automática', desc:'Arquivo markdown no raiz do projeto, lido no início de cada sessão (padrões de código, arquitetura, libs, checklists). O Claude ainda salva aprendizados — comandos de build, insights de debug — entre sessões automaticamente.' },
+      { titulo:'Skills e comandos "/"',          desc:'Empacote fluxos repetíveis e compartilháveis pelo time, como /review-pr ou /deploy-staging.' },
+      { titulo:'Hooks',                          desc:'Rodam comandos shell antes/depois de ações do Claude — auto-format após cada edição, lint antes do commit.' },
+      { titulo:'MCP (Model Context Protocol)',   desc:'Padrão aberto para conectar o Claude a fontes externas: Google Drive, Jira, Slack ou ferramentas próprias.' },
+      { titulo:'Subagentes e times de agentes',  desc:'Vários agentes em paralelo coordenados por um líder; background agents para sessões simultâneas; Agent SDK para agentes 100% customizados.' },
+      { titulo:'Roda em todo lugar',             desc:'Terminal (CLI), VS Code, JetBrains, app Desktop, navegador (claude.ai/code) e iOS — todos compartilham CLAUDE.md, settings e servidores MCP.' },
+      { titulo:'Automação e agendamento',        desc:'Routines (infra da Anthropic, via /schedule), tarefas agendadas no Desktop e /loop para repetir um prompt na sessão. Composável no estilo Unix (pipe, CI/CD).' },
+    ];
+
+    const CLAUDE_TIPS = [
+      'Seja explícito e imperativo: diga exatamente o que fazer — é a filosofia deste app.',
+      'Dê contexto e o "porquê": explicar a motivação melhora a aderência às instruções.',
+      'Use tags XML (<contexto>, <exemplo>, <regras>) para delimitar seções do prompt.',
+      'Atribua um papel/persona via system prompt.',
+      'Forneça exemplos (multishot) do formato de saída desejado.',
+      'Peça raciocínio passo a passo em tarefas complexas (thinking).',
+      'Encadeie prompts: divida tarefas grandes em etapas verificáveis.',
+    ];
 
     // ─── SERIALIZAÇÃO MARKDOWN ────────────────────────────────────
     function toMarkdown(d) {
@@ -343,14 +372,14 @@ ${d.estrutura.map(e => `   • ${e}`).join('\n')}
               </header>
 
               {/* TABS */}
-              <div role="tablist" aria-label="Etapas" style={{ display:'flex', gap:'0.25rem', padding:'0.25rem', marginBottom:'1.25rem', background:'var(--card)', border:'1px solid var(--brd)', borderRadius:'0.75rem', backdropFilter:'blur(8px)' }}>
-                {[['input',<FileText size={16} />,'Entrada Bruta'],['output',<Layers size={16} />,'Prompt Estruturado']].map(([key,icon,label]) => {
-                  const disabled = key==='output' && !optimized;
-                  const selected = activeTab===key && (key==='input' || optimized);
+              <div role="tablist" aria-label="Seções" style={{ display:'flex', gap:'0.25rem', padding:'0.25rem', marginBottom:'1.25rem', background:'var(--card)', border:'1px solid var(--brd)', borderRadius:'0.75rem', backdropFilter:'blur(8px)' }}>
+                {[['input',<FileText size={16} />,'Entrada',false],['output',<Layers size={16} />,'Prompt',true],['claude',<Brain size={16} />,'Claude & Code',false]].map(([key,icon,label,needsOpt]) => {
+                  const disabled = needsOpt && !optimized;
+                  const selected = activeTab===key && !disabled;
                   return (
                     <button key={key} role="tab" aria-selected={selected} disabled={disabled}
-                            onClick={() => key==='output' ? (optimized && setActiveTab('output')) : setActiveTab('input')}
-                            style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', padding:'0.625rem 1rem', borderRadius:'0.5rem', border:'none', cursor: disabled ? 'not-allowed' : 'pointer', fontFamily:'inherit', fontSize:'0.8rem', fontWeight:500, letterSpacing:'-0.01em', opacity: disabled ? 0.4 : 1, transition:'all 200ms',
+                            onClick={() => { if (!disabled) setActiveTab(key); }}
+                            style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', padding:'0.625rem 0.75rem', borderRadius:'0.5rem', border:'none', cursor: disabled ? 'not-allowed' : 'pointer', fontFamily:'inherit', fontSize:'0.8rem', fontWeight:500, letterSpacing:'-0.01em', opacity: disabled ? 0.4 : 1, transition:'all 200ms', whiteSpace:'nowrap',
                               ...(selected
                                 ? { background:`linear-gradient(to right,var(--af),var(--at))`, color:'#fff', boxShadow:'0 6px 20px -8px var(--af)' }
                                 : { background:'transparent', color:'var(--tx-m)' }) }}>
@@ -363,7 +392,9 @@ ${d.estrutura.map(e => `   • ${e}`).join('\n')}
               {/* MAIN CARD */}
               <div style={{ background:'var(--card)', border:'1px solid var(--brd)', borderRadius:'1rem', padding:'1.5rem', backdropFilter:'blur(12px)', boxShadow: isDark ? '0 25px 50px -12px rgba(0,0,0,.5)' : '0 25px 50px -12px rgba(0,0,0,.08)' }}>
 
-                {activeTab === 'input' ? (
+                {activeTab === 'claude' ? (
+                  <ClaudeGuide />
+                ) : activeTab === 'input' ? (
                   <>
                     <div style={{ marginBottom:'0.75rem', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'0.5rem' }}>
                       <label htmlFor="raw-input" style={{ fontSize:'0.875rem', fontWeight:500, letterSpacing:'-0.01em' }}>Sua ideia, comando ou rascunho</label>
@@ -521,14 +552,14 @@ ${d.estrutura.map(e => `   • ${e}`).join('\n')}
                     <AlertCircle size={48} style={{ color:'var(--tx-d)', margin:'0 auto 1rem' }} />
                     <p style={{ color:'var(--tx-m)', fontSize:'0.875rem', margin:0, lineHeight:1.6 }}>
                       Nenhum prompt otimizado ainda.<br />
-                      Insira uma ideia na aba <span style={{ color:'var(--tx)' }}>"Entrada Bruta"</span>.
+                      Insira uma ideia na aba <span style={{ color:'var(--tx)' }}>"Entrada"</span>.
                     </p>
                   </div>
                 )}
               </div>
 
               <footer style={{ marginTop:'2rem', textAlign:'center', fontSize:'0.7rem', color:'var(--tx-d)' }}>
-                Engenharia de Prompts · Imperativos Acionáveis · 100% client-side · Conformidade WCAG AA
+                Engenharia de Prompts · Imperativos Acionáveis · 100% client-side · Modelos Claude atualizados em mai/2026
               </footer>
             </main>
           </div>
@@ -581,6 +612,91 @@ ${d.estrutura.map(e => `   • ${e}`).join('\n')}
         <code style={{ display:'inline-block', fontSize:'0.7rem', padding:'0.125rem 0.5rem', borderRadius:'0.25rem', fontFamily:'monospace', color:'var(--as)', background:'var(--abg)', border:'1px solid var(--abr)' }}>
           [DADO A SER INFORMADO]: {children}
         </code>
+      );
+    }
+
+    function GuideCard({ icon, title, children }) {
+      return (
+        <div className="qf" style={{ background:'var(--card-i)', border:'1px solid var(--brd-s)', borderRadius:'0.75rem', overflow:'hidden' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'0.625rem', padding:'0.625rem 1rem', borderBottom:'1px solid var(--brd-s)' }}>
+            <span aria-hidden="true" style={{ color:'var(--as)', display:'flex' }}>{icon}</span>
+            <h2 style={{ margin:0, fontSize:'0.8rem', fontWeight:600, letterSpacing:'-0.01em' }}>{title}</h2>
+          </div>
+          <div style={{ padding:'0.875rem', display:'flex', flexDirection:'column', gap:'0.75rem', fontSize:'0.8rem', lineHeight:1.6, color:'var(--tx-m)' }}>
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    // ─── ABA: CLAUDE & CLAUDE CODE ────────────────────────────────
+    function ClaudeGuide() {
+      return (
+        <div style={{ display:'flex', flexDirection:'column', gap:'0.75rem' }}>
+
+          {/* Modelos atuais */}
+          <GuideCard icon={<Cpu size={14} />} title="Modelos Claude atuais (mai/2026)">
+            <div style={{ display:'flex', flexDirection:'column', gap:'0.625rem' }}>
+              {CLAUDE_MODELS.map((mod,i) => (
+                <div key={i} style={{ background:'var(--ibg)', border:'1px solid var(--brd-s)', borderRadius:'0.5rem', padding:'0.75rem' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', flexWrap:'wrap', marginBottom:'0.375rem' }}>
+                    <span style={{ fontSize:'0.85rem', fontWeight:600, color:'var(--tx)' }}>{mod.nome}</span>
+                    <span style={{ fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:700, padding:'0.125rem 0.5rem', borderRadius:'9999px', color:'var(--as)', background:'var(--abg)', border:'1px solid var(--abr)' }}>{mod.tier}</span>
+                  </div>
+                  <p style={{ margin:'0 0 0.5rem', fontSize:'0.775rem', color:'var(--tx-m)' }}>{mod.melhor}</p>
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(8.5rem,1fr))', gap:'0.375rem' }}>
+                    {[['Contexto',mod.contexto],['Saída máx.',mod.saida],['Conhecimento',mod.cutoff],['Preço (in/out)',mod.preco],['Raciocínio',mod.raciocinio]].map(([k,v],j) => (
+                      <div key={j} style={{ fontSize:'0.7rem' }}>
+                        <div style={{ textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:700, color:'var(--tx-d)', fontSize:'0.6rem', marginBottom:'0.125rem' }}>{k}</div>
+                        <div style={{ color:'var(--tx)' }}>{v}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p style={{ margin:0, fontSize:'0.7rem', color:'var(--tx-d)', lineHeight:1.6 }}>
+              Opus 4.7 e anteriores são <strong style={{ color:'var(--tx-m)' }}>legados</strong>; Claude Sonnet 4 e Opus 4 estão <strong style={{ color:'var(--da)' }}>descontinuados</strong> (retirada em 15/06/2026). Migre para os modelos acima.
+            </p>
+          </GuideCard>
+
+          {/* Claude Code */}
+          <GuideCard icon={<Terminal size={14} />} title="Claude Code — o agente de código">
+            <p style={{ margin:0 }}>
+              Ferramenta agêntica que lê o codebase, edita arquivos, roda comandos e integra com suas ferramentas — no terminal, IDE, app Desktop e navegador. Instalação no terminal:
+            </p>
+            <code style={{ display:'block', fontFamily:'monospace', fontSize:'0.72rem', padding:'0.5rem 0.75rem', borderRadius:'0.5rem', background:'var(--ibg)', border:'1px solid var(--brd-s)', color:'var(--tx)', overflowX:'auto' }}>
+              curl -fsSL https://claude.ai/install.sh | bash
+            </code>
+            <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem' }}>
+              {CLAUDE_CODE.map((f,i) => (
+                <div key={i} style={{ display:'flex', gap:'0.5rem' }}>
+                  <Bot size={14} style={{ color:'var(--as)', flexShrink:0, marginTop:'0.125rem' }} />
+                  <div>
+                    <span style={{ fontWeight:600, color:'var(--tx)' }}>{f.titulo}. </span>
+                    <span>{f.desc}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </GuideCard>
+
+          {/* Boas práticas */}
+          <GuideCard icon={<BookOpen size={14} />} title="Boas práticas de prompting para Claude">
+            <ul style={{ margin:0, padding:0, listStyle:'none', display:'flex', flexDirection:'column', gap:'0.375rem' }}>
+              {CLAUDE_TIPS.map((t,i) => (
+                <li key={i} style={{ display:'flex', gap:'0.5rem' }}>
+                  <span style={{ color:'var(--as)', fontWeight:700, flexShrink:0 }}>▸</span><span>{t}</span>
+                </li>
+              ))}
+            </ul>
+            <a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank" rel="noopener noreferrer"
+               style={{ display:'inline-flex', alignItems:'center', gap:'0.375rem', fontSize:'0.72rem', color:'var(--as)', textDecoration:'none', fontWeight:600 }}>
+              <ExternalLink size={12} />Guia oficial de engenharia de prompts
+            </a>
+          </GuideCard>
+
+        </div>
       );
     }
 
