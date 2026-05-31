@@ -9,7 +9,7 @@ Ferramenta web que transforma rascunhos caóticos de comandos em **prompts imper
 - **Motor de inferência por domínio** — detecta automaticamente o perfil da tarefa (Código, Jurídico, Marketing, Criativo, Redação, Análise, Dados, Estratégia, Didático) e atribui persona, tom e diretrizes adequadas.
 - **4 Quadrantes**: Escopo & Objetivo · Diretrizes Imperativas (UTILIZE / GARANTA / MANTENHA / ABSTENHA-SE) · Formatação & Design · Segregação de Contexto & Restrições.
 - **Parâmetros recomendados do LLM** por domínio (modelo, temperatura, top-p, max tokens, raciocínio), com justificativa.
-- **Aba "Claude & Code"** — referência atualizada (mai/2026) dos modelos Claude (Opus 4.8, Sonnet 4.6, Haiku 4.5), dos recursos do **Claude Code** (CLAUDE.md, skills, hooks, MCP, subagentes) e de boas práticas de prompting.
+- **Aba "Claude & Code"** — referência atualizada (mai/2026) dos modelos Claude (Opus 4.8, Sonnet 4.6, Haiku 4.5); **guia por ecossistema** com anatomia + template XML copiável para 4 plataformas (Claude Geral/API, Cowork, Artifacts, Code CLI); **tabela de hiperparâmetros** (temperatura/top-p/max tokens/stop) por tarefa técnica; recursos do Claude Code e boas práticas de prompting.
 - **Exemplos rápidos** (quick-start) e atalho **Ctrl/Cmd + Enter**.
 - **Exportar `.md`** e **copiar** o prompt para o clipboard.
 - **Tema claro / Tokyo Midnight** com persistência (localStorage) e respeito a `prefers-color-scheme`.

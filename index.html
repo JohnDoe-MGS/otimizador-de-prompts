@@ -52,7 +52,8 @@
       Sparkles, FileText, Wand2, Copy, Check, Target, Zap,
       Palette, Shield, Loader2, RotateCcw, ArrowLeft,
       Lightbulb, AlertCircle, Layers, Sun, Moon, Download,
-      Cpu, Thermometer, Brain, Sliders, Hash, Coins, Terminal, Bot, BookOpen, ExternalLink
+      Cpu, Thermometer, Brain, Sliders, Hash, Coins, Terminal, Bot, BookOpen, ExternalLink,
+      Globe, Users, Box, ClipboardCopy
     } = LucideReact;
 
     // ─── EXEMPLOS RÁPIDOS ─────────────────────────────────────────
@@ -170,6 +171,178 @@
       'Forneça exemplos (multishot) do formato de saída desejado.',
       'Peça raciocínio passo a passo em tarefas complexas (thinking).',
       'Encadeie prompts: divida tarefas grandes em etapas verificáveis.',
+    ];
+
+    // ─── GUIAS POR ECOSSISTEMA (4 plataformas Claude) ─────────────
+    const PLATFORMS = [
+      {
+        id:'geral', nome:'Claude Geral / API', icon:'globe',
+        melhor:'Tarefas pontuais, prompts de sistema e integrações via API.',
+        anatomia:[
+          'Papel no system prompt (role)',
+          'Contexto + o "porquê" da tarefa',
+          'Instruções numeradas e afirmativas',
+          'Exemplos (multishot, 3–5)',
+          'Dados/documento em tag própria',
+          'Espaço de raciocínio (thinking)',
+          'Formato de saída explícito',
+        ],
+        template:`<role>Você é um {ESPECIALISTA}.</role>
+
+<context>
+{CONTEXTO} — e por que isto importa: {MOTIVAÇÃO}.
+</context>
+
+<instructions>
+1. {PASSO 1}
+2. {PASSO 2}
+3. {PASSO 3}
+</instructions>
+
+<examples>
+  <example>
+    <input>{ENTRADA EXEMPLO}</input>
+    <output>{SAÍDA IDEAL}</output>
+  </example>
+</examples>
+
+<data>
+{DADOS OU DOCUMENTO A PROCESSAR}
+</data>
+
+<thinking>
+Raciocine passo a passo antes de responder.
+</thinking>
+
+<output_format>
+{markdown | JSON válido | tabela}
+</output_format>`,
+        porque:'As tags XML impedem que o modelo confunda instruções, contexto e dados — o maior ganho de confiabilidade em prompts longos. O papel vai no system prompt (afeta tom e domínio); multishot é a técnica de maior impacto isolado. Em contexto longo (≥ dezenas de milhares de tokens), coloque os documentos no TOPO, antes das instruções.',
+      },
+      {
+        id:'cowork', nome:'Claude Cowork', icon:'users',
+        melhor:'Projetos multi-etapa autônomos: pesquisa, análise e criação de arquivos.',
+        anatomia:[
+          'Objetivo = entregável final concreto',
+          'Critérios de sucesso mensuráveis',
+          'Recursos (arquivos + conhecimento)',
+          'Restrições e guardrails',
+          'Plano antes de executar + checkpoints',
+          'Formato dos arquivos de saída',
+        ],
+        template:`<objetivo>
+{ENTREGÁVEL FINAL CONCRETO, ex.: "relatório .docx de 10 páginas"}
+</objetivo>
+
+<success_criteria>
+- {CRITÉRIO MENSURÁVEL 1}
+- {CRITÉRIO MENSURÁVEL 2}
+</success_criteria>
+
+<resources>
+- Arquivos: {LISTA DE ANEXOS}
+- Conhecimento do projeto: {O QUE CONSULTAR}
+</resources>
+
+<constraints>
+- NÃO {LIMITE}.
+- Peça confirmação antes de {AÇÃO IRREVERSÍVEL}.
+</constraints>
+
+<plan_then_execute>
+Primeiro apresente um plano em etapas. Após minha aprovação,
+execute de ponta a ponta e me atualize a cada marco.
+</plan_then_execute>
+
+<deliverable_format>
+{ESTRUTURA E FORMATO DOS ARQUIVOS ENTREGUES}
+</deliverable_format>`,
+        porque:'O Cowork executa tarefas longas de forma autônoma (minutos+), então o prompt deve ser orientado a ENTREGÁVEL + critérios de sucesso, não a micro-instruções conversacionais. Definir "plano antes de executar" e checkpoints implementa o padrão "delegar e conferir". Recursos e conhecimento do projeto ancoram a saída em dados reais, reduzindo alucinação.',
+      },
+      {
+        id:'artifacts', nome:'Claude Artifacts', icon:'box',
+        melhor:'Apps/UI autocontidos: React, HTML, SVG, diagramas Mermaid.',
+        anatomia:[
+          'Tipo do artefato + stack',
+          'Restrição self-contained (1 arquivo)',
+          'Bibliotecas aprovadas a usar',
+          'Funcionalidades (lista)',
+          'Layout e estilo (Tailwind)',
+          'Recursos com IA via window.claude.complete',
+          'Critério de aceite',
+        ],
+        template:`<artifact_spec>
+  <type>{React | HTML | SVG | Mermaid}</type>
+  <self_contained>
+    Tudo em um único arquivo; sem rede externa nem chaves de API;
+    apenas bibliotecas aprovadas.
+  </self_contained>
+  <libraries>{React, Tailwind, lucide-react, recharts}</libraries>
+</artifact_spec>
+
+<functionality>
+- {FUNÇÃO 1}
+- {FUNÇÃO 2}
+</functionality>
+
+<design>
+- Layout: {DESCRIÇÃO}
+- Estilo: Tailwind, paleta {TEMA}
+</design>
+
+<ai_features optional="true">
+Use window.claude.complete(prompt) para {RECURSO INTELIGENTE}.
+</ai_features>
+
+<acceptance>{COMO SABER QUE ESTÁ PRONTO}</acceptance>`,
+        porque:'O sandbox de Artifacts roda um ÚNICO arquivo, sem rede arbitrária nem segredos, só com libs aprovadas + Tailwind. Declarar tipo/stack e a restrição self-contained evita que o modelo gere código que não executa no preview. Para inteligência embutida, window.claude.complete é a única ponte de IA. Prefira estado em memória (useState) — armazenamento persistente pode ser restrito no sandbox.',
+      },
+      {
+        id:'code', nome:'Claude Code (CLI)', icon:'terminal',
+        melhor:'Engenharia agêntica no repositório: features, bugs, testes, refactor.',
+        anatomia:[
+          'CLAUDE.md = contexto permanente do repo',
+          'Explore: ler arquivos, sem codar ainda',
+          'Plan: "think"/"ultrathink" + plano',
+          'Code: implementar e verificar',
+          'Commit: testes, PR, changelog',
+        ],
+        template:`# CLAUDE.md (raiz do repositório)
+## Comandos
+- build: {CMD}
+- test: {CMD}
+## Padrões de código
+- {CONVENÇÕES}
+## IMPORTANTE
+- YOU MUST rodar os testes antes de commitar.
+
+# -- Prompt da tarefa --
+<task>{O QUE CONSTRUIR OU CORRIGIR}</task>
+
+<explore>
+Leia {ARQUIVOS/PASTAS} e NÃO escreva código ainda.
+</explore>
+
+<plan>
+Think hard e proponha um plano em etapas para eu aprovar.
+</plan>
+
+<implement>
+Após aprovação, implemente e verifique a cada passo.
+Escreva os testes primeiro (TDD); confirme que falham; então implemente.
+</implement>`,
+        porque:'O CLAUDE.md é injetado automaticamente no contexto a cada sessão (comandos, padrões, "YOU MUST" para regras críticas). O fluxo explore→plan→code→commit impede que o agente codifique cedo demais. As palavras "think < think hard < think harder < ultrathink" aumentam o orçamento de raciocínio. Use /clear entre tarefas para evitar poluição da janela de contexto e subagentes para investigação em paralelo.',
+      },
+    ];
+
+    const HYPERPARAMS = [
+      { tarefa:'Código / refactor',          temp:'0.0 – 0.2', topP:'0.9',  max:'8k – 16k',  stop:'``` · \\n\\n##' },
+      { tarefa:'Saída JSON estrita',          temp:'0.0',       topP:'0.8',  max:'p/ schema', stop:'} · ```' },
+      { tarefa:'Análise / extração de dados', temp:'0.0 – 0.2', topP:'0.85', max:'4k',        stop:'\\n\\n' },
+      { tarefa:'Raciocínio / estratégia',     temp:'0.3 – 0.5', topP:'0.9',  max:'8k – 16k',  stop:'—' },
+      { tarefa:'Redação técnica / jurídica',  temp:'0.2 – 0.4', topP:'0.85', max:'4k – 8k',   stop:'—' },
+      { tarefa:'Copy / criativo',             temp:'0.7 – 1.0', topP:'0.95', max:'2k – 4k',   stop:'—' },
+      { tarefa:'Classificação / rótulos',     temp:'0.0',       topP:'0.7',  max:'64 – 256',  stop:'\\n' },
     ];
 
     // ─── SERIALIZAÇÃO MARKDOWN ────────────────────────────────────
@@ -631,6 +804,15 @@ ${d.estrutura.map(e => `   • ${e}`).join('\n')}
 
     // ─── ABA: CLAUDE & CLAUDE CODE ────────────────────────────────
     function ClaudeGuide() {
+      const [plat, setPlat] = useState('geral');
+      const [copiedTpl, setCopiedTpl] = useState(false);
+      const sel = PLATFORMS.find(p => p.id === plat) || PLATFORMS[0];
+      const PIcons = { globe:<Globe size={14} />, users:<Users size={14} />, box:<Box size={14} />, terminal:<Terminal size={14} /> };
+      const copyTpl = async () => {
+        try { await navigator.clipboard.writeText(sel.template); }
+        catch { const t=document.createElement('textarea'); t.value=sel.template; document.body.appendChild(t); t.select(); try{document.execCommand('copy');}catch{} document.body.removeChild(t); }
+        setCopiedTpl(true); setTimeout(()=>setCopiedTpl(false), 2000);
+      };
       return (
         <div style={{ display:'flex', flexDirection:'column', gap:'0.75rem' }}>
 
@@ -658,6 +840,78 @@ ${d.estrutura.map(e => `   • ${e}`).join('\n')}
             <p style={{ margin:0, fontSize:'0.7rem', color:'var(--tx-d)', lineHeight:1.6 }}>
               Opus 4.7 e anteriores são <strong style={{ color:'var(--tx-m)' }}>legados</strong>; Claude Sonnet 4 e Opus 4 estão <strong style={{ color:'var(--da)' }}>descontinuados</strong> (retirada em 15/06/2026). Migre para os modelos acima.
             </p>
+          </GuideCard>
+
+          {/* Guia por ecossistema */}
+          <GuideCard icon={<Layers size={14} />} title="Guia por ecossistema — anatomia + template">
+            <div role="tablist" aria-label="Plataformas Claude" style={{ display:'flex', flexWrap:'wrap', gap:'0.375rem' }}>
+              {PLATFORMS.map(p => {
+                const on = p.id === plat;
+                return (
+                  <button key={p.id} role="tab" aria-selected={on} onClick={() => { setPlat(p.id); setCopiedTpl(false); }}
+                          style={{ display:'flex', alignItems:'center', gap:'0.375rem', fontSize:'0.72rem', fontWeight:600, padding:'0.3rem 0.7rem', borderRadius:'9999px', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap', border:'1px solid '+(on?'transparent':'var(--sbr)'), color: on?'#fff':'var(--tx-m)', background: on?'linear-gradient(to right,var(--af),var(--at))':'var(--sb)', transition:'all 150ms' }}>
+                    {PIcons[p.icon]}{p.nome}
+                  </button>
+                );
+              })}
+            </div>
+
+            <p style={{ margin:0, fontSize:'0.78rem' }}><strong style={{ color:'var(--tx)' }}>Melhor para:</strong> {sel.melhor}</p>
+
+            <div>
+              <div style={{ fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:700, color:'var(--tx-d)', marginBottom:'0.375rem' }}>Anatomia do prompt ideal</div>
+              <ol style={{ margin:0, paddingLeft:'1.1rem', display:'flex', flexDirection:'column', gap:'0.2rem' }}>
+                {sel.anatomia.map((a,i) => <li key={i} style={{ color:'var(--tx-m)' }}>{a}</li>)}
+              </ol>
+            </div>
+
+            <div>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'0.375rem' }}>
+                <div style={{ fontSize:'0.6rem', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:700, color:'var(--tx-d)' }}>Template pronto (tags XML)</div>
+                <button onClick={copyTpl}
+                        style={{ display:'flex', alignItems:'center', gap:'0.3rem', fontSize:'0.68rem', fontWeight:600, padding:'0.25rem 0.6rem', borderRadius:'0.4rem', cursor:'pointer', fontFamily:'inherit', border: copiedTpl?'1px solid var(--ok-br)':'1px solid var(--sbr)', color: copiedTpl?'var(--ok)':'var(--st)', background: copiedTpl?'var(--ok-bg)':'var(--sb)', transition:'all 150ms' }}>
+                  {copiedTpl ? <><Check size={12} />Copiado!</> : <><ClipboardCopy size={12} />Copiar template</>}
+                </button>
+              </div>
+              <pre style={{ margin:0, padding:'0.75rem', borderRadius:'0.5rem', background:'var(--ibg)', border:'1px solid var(--brd-s)', overflowX:'auto', fontSize:'0.68rem', lineHeight:1.5 }}><code style={{ fontFamily:'monospace', color:'var(--tx)', whiteSpace:'pre' }}>{sel.template}</code></pre>
+            </div>
+
+            <div style={{ padding:'0.75rem', background:'var(--abg)', border:'1px solid var(--abr)', borderRadius:'0.5rem', display:'flex', gap:'0.5rem' }}>
+              <Lightbulb size={16} style={{ color:'var(--as)', flexShrink:0, marginTop:'0.1rem' }} />
+              <p style={{ margin:0, fontSize:'0.75rem', color:'var(--tx-m)', lineHeight:1.6 }}><strong style={{ color:'var(--as)' }}>Por que funciona: </strong>{sel.porque}</p>
+            </div>
+          </GuideCard>
+
+          {/* Hiperparâmetros */}
+          <GuideCard icon={<Sliders size={14} />} title="Hiperparâmetros de API por tarefa técnica">
+            <div style={{ overflowX:'auto' }}>
+              <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'0.72rem' }}>
+                <thead>
+                  <tr>
+                    {['Tarefa','Temperatura','Top-P','Max Tokens','Stop Sequences'].map((h,i) => (
+                      <th key={i} style={{ textAlign:'left', padding:'0.4rem 0.5rem', borderBottom:'1px solid var(--brd)', color:'var(--tx-d)', textTransform:'uppercase', letterSpacing:'0.06em', fontSize:'0.58rem', whiteSpace:'nowrap' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {HYPERPARAMS.map((r,i) => (
+                    <tr key={i}>
+                      <td style={{ padding:'0.4rem 0.5rem', borderBottom:'1px solid var(--brd-s)', color:'var(--tx)', fontWeight:600 }}>{r.tarefa}</td>
+                      <td style={{ padding:'0.4rem 0.5rem', borderBottom:'1px solid var(--brd-s)', color:'var(--tx-m)', fontFamily:'monospace' }}>{r.temp}</td>
+                      <td style={{ padding:'0.4rem 0.5rem', borderBottom:'1px solid var(--brd-s)', color:'var(--tx-m)', fontFamily:'monospace' }}>{r.topP}</td>
+                      <td style={{ padding:'0.4rem 0.5rem', borderBottom:'1px solid var(--brd-s)', color:'var(--tx-m)', fontFamily:'monospace' }}>{r.max}</td>
+                      <td style={{ padding:'0.4rem 0.5rem', borderBottom:'1px solid var(--brd-s)', color:'var(--tx-m)', fontFamily:'monospace' }}>{r.stop}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ padding:'0.75rem', background:'var(--abg)', border:'1px solid var(--abr)', borderRadius:'0.5rem', display:'flex', gap:'0.5rem' }}>
+              <AlertCircle size={16} style={{ color:'var(--as)', flexShrink:0, marginTop:'0.1rem' }} />
+              <p style={{ margin:0, fontSize:'0.72rem', color:'var(--tx-m)', lineHeight:1.6 }}>
+                <strong style={{ color:'var(--as)' }}>Crítico: </strong>ajuste <em>temperature</em> OU <em>top_p</em>, nunca os dois ao mesmo tempo. Com <em>extended/adaptive thinking</em> ativo, mantenha <strong>temperature = 1</strong> — o modo de raciocínio não aceita amostragem customizada; controle a profundidade pelo orçamento de <em>thinking</em> ou pelo parâmetro <em>effort</em>.
+              </p>
+            </div>
           </GuideCard>
 
           {/* Claude Code */}
