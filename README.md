@@ -20,36 +20,42 @@ Ferramenta web que transforma rascunhos caóticos de comandos em **prompts imper
 
 ## 🛠️ Stack
 
-Arquivo único `index.html` autocontido:
+- **React 18** + **lucide-react** — empacotados num **bundle local pré-compilado** (`assets/app.js`), sem nenhuma dependência de CDN em tempo de execução.
+- **esbuild** transpila o JSX e faz *tree-shaking* (só os ícones usados entram no bundle).
+- **Montserrat** (Google Fonts), CSS variables (temas) e estilos inline.
 
-- **React 18** (UMD) + **Babel Standalone** (transpila o JSX no navegador)
-- **Lucide React** (ícones, UMD)
-- **Montserrat** (Google Fonts)
-- Estilização via CSS variables (temas) e estilos inline — sem build step.
+Estrutura:
 
-> **Nota técnica:** o build UMD do `lucide-react` lê o React de `window.react` (minúsculo).
-> Por isso há um shim `window.react = window.React;` antes de carregá-lo — sem ele, os
-> ícones ficam indefinidos e o app não renderiza.
+```
+src/app.jsx      → código-fonte (JSX, imports ES)
+assets/app.js    → bundle gerado (commitado; é o que o site serve)
+index.html       → casca mínima que carrega o bundle
+package.json     → deps fixadas + script de build
+```
+
+> **Por que sem CDN:** o app não quebra se a unpkg/jsDelivr cair, carrega mais rápido
+> (sem Babel transpilando ~3 MB no navegador) e o bundle final tem ~210 KB.
 
 ## 🚀 Rodando localmente
 
-Por ser estático, basta servir o diretório:
-
 ```bash
-npx serve .
-# ou
-python -m http.server 4321
+npm install        # instala React, lucide-react e esbuild
+npm run build      # gera assets/app.js
+npx serve .        # serve em http://localhost:3000
 ```
 
-E abrir `http://localhost:4321`.
+Durante o desenvolvimento, use `npm run watch` para rebuildar a cada alteração em `src/app.jsx`.
 
 ## 📦 Deploy
 
-Hospedado como site estático na **Vercel** (sem build). Para republicar:
+Hospedado como site estático na **Vercel**. O bundle (`assets/app.js`) é commitado, então
+o deploy continua **zero-config** (a Vercel só serve os arquivos). Para republicar:
 
 ```bash
-vercel deploy --prod
+npm run build && vercel deploy --prod
 ```
+
+> ⚠️ Sempre rode `npm run build` após editar `src/app.jsx` — o site serve o bundle, não o fonte.
 
 ## 📄 Licença
 

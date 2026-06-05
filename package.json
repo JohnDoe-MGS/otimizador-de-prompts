@@ -1,0 +1,18 @@
+{
+  "name": "otimizador-de-prompts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Otimizador Imperativo de Prompts — app estático, bundle pré-compilado (sem CDN em runtime).",
+  "scripts": {
+    "build": "esbuild src/app.jsx --bundle --minify --format=iife --target=es2019 --jsx=automatic --loader:.jsx=jsx --outfile=assets/app.js",
+    "watch": "npm run build -- --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.11"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "0.383.0"
+  }
+}
