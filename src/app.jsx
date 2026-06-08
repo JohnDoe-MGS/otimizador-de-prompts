@@ -316,80 +316,31 @@ Escreva os testes primeiro (TDD); confirme que falham; então implemente.
 
     // ─── SERIALIZAÇÃO MARKDOWN ────────────────────────────────────
     function toMarkdown(d) {
-      return `# 🎯 PROMPT IMPERATIVO ESTRUTURADO
+      const j = arr => arr.join('; ');
+      return `# PROMPT IMPERATIVO
 
-═════════════════════════════════════════════
-## ▣ 1. ESCOPO E OBJETIVO PRINCIPAL
-═════════════════════════════════════════════
+**Papel:** ${d.persona}
+**Tarefa:** ${d.original}
+**Resultado:** ${d.resultado}
 
-▸ Papel Atribuído:
-   Atue como ${d.persona}.
+## Diretrizes
+- **Utilize:** ${j(d.utilize)}
+- **Garanta:** ${j(d.garanta)}
+- **Mantenha:** ${j(d.mantenha)}
+- **Evite:** ${j(d.abstenha)}
 
-▸ Ideia Original do Usuário:
-   "${d.original}"
+## Formato
+- **Saída:** ${j(d.estrutura)}
+- **Tom:** ${d.tom}
+- **Comprimento:** ${d.comprimento} · **Idioma:** PT-BR
 
-▸ Resultado Esperado:
-   ${d.resultado}
+## Contexto
+- **Público:** ${d.publico} · **Profundidade:** ${d.profundidade}
+- **Referências:** ${d.referencias}
+- **Critérios:** ${d.criterios}
+- **Restrições:** não inventar dados/PII; não exceder o escopo; em caso de ambiguidade, listar suposições antes de responder.
 
-═════════════════════════════════════════════
-## ▣ 2. DIRETRIZES IMPERATIVAS DE COMPORTAMENTO
-═════════════════════════════════════════════
-
-▸ UTILIZE:
-${d.utilize.map(u => `   • ${u}`).join('\n')}
-
-▸ GARANTA QUE:
-${d.garanta.map(g => `   • ${g}`).join('\n')}
-
-▸ MANTENHA:
-${d.mantenha.map(m => `   • ${m}`).join('\n')}
-
-▸ ABSTENHA-SE DE:
-${d.abstenha.map(a => `   • ${a}`).join('\n')}
-
-═════════════════════════════════════════════
-## ▣ 3. REGRAS DE FORMATAÇÃO E DESIGN VISUAL
-═════════════════════════════════════════════
-
-▸ Estrutura de Saída:
-${d.estrutura.map(e => `   • ${e}`).join('\n')}
-
-▸ Tom de Comunicação:
-   ${d.tom}
-
-▸ Comprimento: ${d.comprimento}
-▸ Idioma: Português (Brasil)
-
-═════════════════════════════════════════════
-## ▣ 4. SEGREGAÇÃO DE CONTEXTO E RESTRIÇÕES
-═════════════════════════════════════════════
-
-▸ Restrições:
-   • NÃO inventar dados sensíveis ou informações pessoais.
-   • NÃO ultrapassar o escopo definido.
-   • SE houver ambiguidade, listar suposições antes de responder.
-
-▸ Variáveis Externas:
-   • Público-alvo: ${d.publico}
-   • Profundidade técnica: ${d.profundidade}
-   • Referências ou amostras: ${d.referencias}
-   • Critérios de sucesso: ${d.criterios}
-
-═════════════════════════════════════════════
-## ▣ 5. VERIFICAÇÃO FINAL (revise antes de enviar)
-═════════════════════════════════════════════
-
-Os campos acima foram PRÉ-PREENCHIDOS com valores sugeridos.
-Antes de enviar este prompt ao modelo, CONFIRME ou AJUSTE:
-   ☐ Papel/persona corresponde à especialidade desejada
-   ☐ Resultado esperado e comprimento estão corretos
-   ☐ Público-alvo e profundidade técnica conferem
-   ☐ Referências/amostras reais foram anexadas
-   ☐ Critérios de sucesso refletem sua definição de "pronto"
-
-═════════════════════════════════════════════
-              ✦ FIM DAS DIRETRIZES ✦
-═════════════════════════════════════════════`;
+> _Valores sugeridos — revise persona, resultado, público, referências e critérios antes de enviar._`;
     }
 
     // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────
