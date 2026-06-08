@@ -315,8 +315,17 @@ Escreva os testes primeiro (TDD); confirme que falham; então implemente.
     ];
 
     // ─── SERIALIZAÇÃO MARKDOWN ────────────────────────────────────
+    function nivelCriatividade(temp) {
+      const n = parseFloat(String(temp).replace(',', '.'));
+      if (isNaN(n)) return 'média';
+      if (n <= 0.3) return 'baixa (determinística)';
+      if (n <= 0.6) return 'média (equilibrada)';
+      return 'alta (exploratória)';
+    }
+
     function toMarkdown(d) {
       const j = arr => arr.join('; ');
+      const r = getRecommendations(d.domain);
       return `# PROMPT IMPERATIVO
 
 **Papel:** ${d.persona}
@@ -333,6 +342,7 @@ Escreva os testes primeiro (TDD); confirme que falham; então implemente.
 - **Saída:** ${j(d.estrutura)}
 - **Tom:** ${d.tom}
 - **Comprimento:** ${d.comprimento} · **Idioma:** PT-BR
+- **Criatividade:** ${nivelCriatividade(r.temperatura)} · **Temperatura:** ${r.temperatura} · **Top-p:** ${r.topP}
 
 ## Contexto
 - **Público:** ${d.publico} · **Profundidade:** ${d.profundidade}
