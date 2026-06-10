@@ -326,31 +326,40 @@ Escreva os testes primeiro (TDD); confirme que falham; então implemente.
     function toMarkdown(d) {
       const j = arr => arr.join('; ');
       const r = getRecommendations(d.domain);
-      return `# PROMPT IMPERATIVO
+      return `Atue como ${d.persona}.
 
-**Papel:** ${d.persona}
-**Tarefa:** ${d.original}
-**Resultado:** ${d.resultado}
+<task>
+${d.original}
+Entregue: ${d.resultado}.
+</task>
 
-## Diretrizes
-- **Utilize:** ${j(d.utilize)}
-- **Garanta:** ${j(d.garanta)}
-- **Mantenha:** ${j(d.mantenha)}
-- **Evite:** ${j(d.abstenha)}
+<requirements>
+- Use: ${j(d.utilize)}.
+- Garanta: ${j(d.garanta)}.
+- Mantenha: ${j(d.mantenha)}.
+- Evite: ${j(d.abstenha)}.
+</requirements>
 
-## Formato
-- **Saída:** ${j(d.estrutura)}
-- **Tom:** ${d.tom}
-- **Comprimento:** ${d.comprimento} · **Idioma:** PT-BR
-- **Criatividade:** ${nivelCriatividade(r.temperatura)} · **Temperatura:** ${r.temperatura} · **Top-p:** ${r.topP}
+<format>
+Saída: ${j(d.estrutura)}. Tom: ${d.tom}. Comprimento: ${d.comprimento}. Idioma: PT-BR.
+</format>
 
-## Contexto
-- **Público:** ${d.publico} · **Profundidade:** ${d.profundidade}
-- **Referências:** ${d.referencias}
-- **Critérios:** ${d.criterios}
-- **Restrições:** não inventar dados/PII; não exceder o escopo; em caso de ambiguidade, listar suposições antes de responder.
+<context>
+Público: ${d.publico}. Profundidade: ${d.profundidade}.
+Referências: ${d.referencias}.
+Critérios de sucesso: ${d.criterios}.
+</context>
 
-> _Valores sugeridos — revise persona, resultado, público, referências e critérios antes de enviar._`;
+<rules>
+Não invente dados nem PII. Não exceda o escopo. Se houver ambiguidade, liste as suposições antes de responder.
+</rules>
+
+---
+⚙️ CONFIG DA API — aplicar fora do prompt:
+Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriatividade(r.temperatura)}) · Top-p: ${r.topP} · Max tokens: ${r.maxTokens}
+
+✅ REVISE antes de enviar (valores sugeridos): persona · resultado · público · referências · critérios.
+(Apague esta seção após o "---" ao colar o prompt.)`;
     }
 
     // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────
