@@ -373,6 +373,10 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
       });
       const [activeTab, setActiveTab]     = useState('input');
       const [rawInput, setRawInput]       = useState('');
+      const [inputMode, setInputMode]     = useState('livre');
+      const emptyForm = { tarefa:'', persona:'', tom:'', publico:'', formato:'', comprimento:'', referencias:'', criterios:'' };
+      const [form, setForm]               = useState(emptyForm);
+      const setF = (k,v) => setForm(f => ({ ...f, [k]: v }));
       const [optimized, setOptimized]     = useState(null);
       const [isProcessing, setProcessing] = useState(false);
       const [copied, setCopied]           = useState(false);
@@ -387,10 +391,30 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
         if (meta) meta.setAttribute('content', isDark ? '#1a1b26' : '#fafafa');
       }, [theme, isDark]);
 
+      const guidedReady = form.tarefa.trim().length > 0;
+      const canOptimize = inputMode === 'livre' ? !!rawInput.trim() : guidedReady;
+
       const handleOptimize = () => {
-        if (!rawInput.trim() || isProcessing) return;
+        if (!canOptimize || isProcessing) return;
         setProcessing(true);
-        setTimeout(() => { setOptimized(buildOptimized(rawInput)); setProcessing(false); setActiveTab('output'); }, 650);
+        setTimeout(() => {
+          let base;
+          if (inputMode === 'livre') {
+            base = buildOptimized(rawInput);
+          } else {
+            // Infere a partir da tarefa + pistas dos campos; campos preenchidos sobrescrevem a inferência
+            base = buildOptimized([form.tarefa, form.tom, form.formato].filter(Boolean).join('. '));
+            if (form.persona.trim())     base.persona     = form.persona.trim();
+            if (form.tom.trim())         base.tom         = form.tom.trim();
+            if (form.publico.trim())     base.publico     = form.publico.trim();
+            if (form.formato.trim())     base.estrutura   = [form.formato.trim()];
+            if (form.comprimento.trim()) base.comprimento = form.comprimento.trim();
+            if (form.referencias.trim()) base.referencias = form.referencias.trim();
+            if (form.criterios.trim())   base.criterios   = form.criterios.trim();
+            base.original = form.tarefa.trim();
+          }
+          setOptimized(base); setProcessing(false); setActiveTab('output');
+        }, 650);
       };
 
       const handleKeyDown = (e) => {
@@ -417,7 +441,7 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
         setExported(true); setTimeout(() => setExported(false), 2000);
       };
 
-      const handleReset = () => { setRawInput(''); setOptimized(null); setCopied(false); setExported(false); setActiveTab('input'); };
+      const handleReset = () => { setRawInput(''); setForm(emptyForm); setOptimized(null); setCopied(false); setExported(false); setActiveTab('input'); };
       const recs = optimized ? getRecommendations(optimized.domain) : null;
 
       const wordCount = rawInput.trim() ? rawInput.trim().split(/\s+/).length : 0;
@@ -520,13 +544,29 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
                   <ClaudeGuide />
                 ) : activeTab === 'input' ? (
                   <>
-                    <div style={{ marginBottom:'0.84rem', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'0.5rem' }}>
-                      <label htmlFor="raw-input" style={{ fontSize:'0.875rem', fontWeight:500, letterSpacing:'-0.01em' }}>Sua ideia, comando ou rascunho</label>
-                      <span style={{ fontSize:'0.84rem', color:'var(--tx-d)', fontVariantNumeric:'tabular-nums' }}>
-                        {wordCount.toLocaleString('pt-BR')} palavras · {rawInput.length.toLocaleString('pt-BR')} caracteres
-                      </span>
+                    {/* Modo de entrada */}
+                    <div role="tablist" aria-label="Modo de entrada" style={{ display:'flex', gap:'0.375rem', marginBottom:'0.84rem' }}>
+                      {[['livre','Texto livre'],['guiado','Formulário guiado']].map(([k,lbl]) => (
+                        <button key={k} role="tab" aria-selected={inputMode===k} onClick={() => setInputMode(k)}
+                                style={{ fontSize:'0.84rem', fontWeight:600, padding:'0.35rem 0.8rem', borderRadius:'9999px', cursor:'pointer', fontFamily:'inherit', border:'1px solid '+(inputMode===k?'transparent':'var(--sbr)'), color: inputMode===k?'#fff':'var(--tx-m)', background: inputMode===k?'linear-gradient(to right,var(--af),var(--at))':'var(--sb)', transition:'all 150ms' }}>
+                          {lbl}
+                        </button>
+                      ))}
                     </div>
 
+                    <div style={{ marginBottom:'0.84rem', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'0.5rem' }}>
+                      <label htmlFor="raw-input" style={{ fontSize:'0.875rem', fontWeight:500, letterSpacing:'-0.01em' }}>
+                        {inputMode==='livre' ? 'Sua ideia, comando ou rascunho' : 'Responda o que souber — o resto é inferido'}
+                      </label>
+                      {inputMode==='livre' && (
+                        <span style={{ fontSize:'0.84rem', color:'var(--tx-d)', fontVariantNumeric:'tabular-nums' }}>
+                          {wordCount.toLocaleString('pt-BR')} palavras · {rawInput.length.toLocaleString('pt-BR')} caracteres
+                        </span>
+                      )}
+                    </div>
+
+                    {inputMode === 'livre' ? (
+                    <>
                     {/* Exemplos rápidos */}
                     <div style={{ marginBottom:'0.84rem', display:'flex', flexWrap:'wrap', gap:'0.375rem', alignItems:'center' }}>
                       <span style={{ fontSize:'0.84rem', color:'var(--tx-d)', display:'flex', alignItems:'center', gap:'0.25rem' }}><Sparkles size={12} />Exemplos:</span>
@@ -543,12 +583,39 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
                               onFocus={e => { e.target.style.borderColor='var(--as)'; e.target.style.boxShadow='0 0 0 3px var(--abg)'; }}
                               onBlur={e => { e.target.style.borderColor='var(--brd)'; e.target.style.boxShadow='none'; }}
                               style={{ width:'100%', height:'15rem', padding:'0.75rem 1rem', background:'var(--ibg)', border:'1px solid var(--brd)', borderRadius:'0.84rem', color:'var(--tx)', fontSize:'0.875rem', lineHeight:1.6, letterSpacing:'-0.01em', resize:'vertical', fontFamily:'inherit', transition:'border-color 200ms' }} />
+                    </>
+                    ) : (
+                    <div style={{ display:'flex', flexDirection:'column', gap:'0.65rem' }}>
+                      {[
+                        ['tarefa','O que você quer criar ou resolver? *','Ex.: um app de tarefas em React; uma cláusula de confidencialidade...',true],
+                        ['persona','Quem deve responder? (papel/especialista)','Em branco = inferido pelo assunto',false],
+                        ['tom','Qual tom deseja?','Ex.: formal, casual, persuasivo... Em branco = inferido',false],
+                        ['publico','Para quem é o resultado? (público-alvo)','Em branco = sugerido por domínio',false],
+                        ['formato','Em que formato quer a saída?','Ex.: tabela, JSON, markdown... Em branco = inferido',false],
+                        ['comprimento','Qual a extensão desejada?','Ex.: 2 páginas, 500 palavras... Em branco = sugerido',false],
+                        ['referencias','Há referências ou amostras a considerar?','Em branco = sugerido por domínio',false],
+                        ['criterios','Como você saberá que ficou bom? (critérios)','Em branco = sugerido por domínio',false],
+                      ].map(([k,q,ph,req]) => (
+                        <div key={k}>
+                          <label htmlFor={'f-'+k} style={{ display:'block', fontSize:'0.84rem', fontWeight:600, color: req?'var(--as)':'var(--tx-m)', marginBottom:'0.25rem' }}>{q}</label>
+                          {k==='tarefa' ? (
+                            <textarea id={'f-'+k} value={form[k]} onChange={e => setF(k, e.target.value)} onKeyDown={handleKeyDown} spellCheck={false} placeholder={ph}
+                              style={{ width:'100%', height:'4.5rem', padding:'0.6rem 0.8rem', background:'var(--ibg)', border:'1px solid var(--brd)', borderRadius:'0.6rem', color:'var(--tx)', fontSize:'0.875rem', lineHeight:1.5, resize:'vertical', fontFamily:'inherit' }} />
+                          ) : (
+                            <input id={'f-'+k} type="text" value={form[k]} onChange={e => setF(k, e.target.value)} onKeyDown={handleKeyDown} spellCheck={false} placeholder={ph}
+                              style={{ width:'100%', padding:'0.55rem 0.8rem', background:'var(--ibg)', border:'1px solid var(--brd)', borderRadius:'0.6rem', color:'var(--tx)', fontSize:'0.875rem', fontFamily:'inherit' }} />
+                          )}
+                        </div>
+                      ))}
+                      <p style={{ margin:0, fontSize:'0.8rem', color:'var(--tx-d)' }}>* obrigatório · campos em branco serão preenchidos por inferência e marcados como <em>sugerido</em>.</p>
+                    </div>
+                    )}
                     <div style={{ marginTop:'1.25rem', display:'flex', flexWrap:'wrap', gap:'0.84rem' }}>
-                      <button onClick={handleOptimize} disabled={!rawInput.trim() || isProcessing}
-                              style={{ flex:1, minWidth:'12rem', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', padding:'0.75rem 1.25rem', background:`linear-gradient(to right,var(--af),var(--at))`, border:'none', borderRadius:'0.84rem', color:'#fff', fontFamily:'inherit', fontSize:'0.875rem', fontWeight:600, letterSpacing:'-0.01em', cursor: !rawInput.trim()||isProcessing ? 'not-allowed' : 'pointer', opacity: !rawInput.trim()||isProcessing ? 0.4 : 1, boxShadow:'0 10px 25px -10px var(--af)', transition:'opacity 200ms' }}>
+                      <button onClick={handleOptimize} disabled={!canOptimize || isProcessing}
+                              style={{ flex:1, minWidth:'12rem', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', padding:'0.75rem 1.25rem', background:`linear-gradient(to right,var(--af),var(--at))`, border:'none', borderRadius:'0.84rem', color:'#fff', fontFamily:'inherit', fontSize:'0.875rem', fontWeight:600, letterSpacing:'-0.01em', cursor: !canOptimize||isProcessing ? 'not-allowed' : 'pointer', opacity: !canOptimize||isProcessing ? 0.4 : 1, boxShadow:'0 10px 25px -10px var(--af)', transition:'opacity 200ms' }}>
                         {isProcessing ? <><Loader2 size={16} className="spin" />Estruturando...</> : <><Wand2 size={16} />Otimizar Diretrizes</>}
                       </button>
-                      {rawInput && (
+                      {(rawInput || form.tarefa) && (
                         <button onClick={handleReset}
                                 style={{ display:'flex', alignItems:'center', gap:'0.5rem', padding:'0.75rem 1.25rem', background:'var(--sb)', border:'1px solid var(--sbr)', borderRadius:'0.84rem', color:'var(--st)', fontFamily:'inherit', fontSize:'0.875rem', fontWeight:500, cursor:'pointer', transition:'background 200ms' }}>
                           <RotateCcw size={16} />Limpar
