@@ -5,7 +5,7 @@
       Palette, Shield, Loader2, RotateCcw, ArrowLeft,
       Lightbulb, AlertCircle, Layers, Sun, Moon, Download,
       Cpu, Thermometer, Brain, Sliders, Hash, Coins, Terminal, Bot, BookOpen, ExternalLink,
-      Globe, Users, Box, ClipboardCopy
+      Globe, Users, Box, ClipboardCopy, Scale, Upload, FileSearch, Grid3x3, Gavel, FileSignature
     } from 'lucide-react';
 
     // ─── EXEMPLOS RÁPIDOS ─────────────────────────────────────────
@@ -521,7 +521,7 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
 
               {/* TABS */}
               <div role="tablist" aria-label="Seções" style={{ display:'flex', gap:'0.25rem', padding:'0.25rem', marginBottom:'1.25rem', background:'var(--card)', border:'1px solid var(--brd)', borderRadius:'0.84rem', backdropFilter:'blur(8px)' }}>
-                {[['input',<FileText size={16} />,'Entrada',false],['output',<Layers size={16} />,'Prompt',true],['claude',<Brain size={16} />,'Claude & Code',false]].map(([key,icon,label,needsOpt]) => {
+                {[['input',<FileText size={16} />,'Entrada',false],['output',<Layers size={16} />,'Prompt',true],['advocacia',<Scale size={16} />,'Advocacia',false],['claude',<Brain size={16} />,'Claude & Code',false]].map(([key,icon,label,needsOpt]) => {
                   const disabled = needsOpt && !optimized;
                   const selected = activeTab===key && !disabled;
                   return (
@@ -540,7 +540,9 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
               {/* MAIN CARD */}
               <div style={{ background:'var(--card)', border:'1px solid var(--brd)', borderRadius:'1rem', padding:'1.5rem', backdropFilter:'blur(12px)', boxShadow: isDark ? '0 25px 50px -12px rgba(0,0,0,.5)' : '0 25px 50px -12px rgba(0,0,0,.08)' }}>
 
-                {activeTab === 'claude' ? (
+                {activeTab === 'advocacia' ? (
+                  <Advocacia />
+                ) : activeTab === 'claude' ? (
                   <ClaudeGuide />
                 ) : activeTab === 'input' ? (
                   <>
@@ -820,6 +822,239 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
         <code style={{ display:'inline-block', fontSize:'0.84rem', padding:'0.125rem 0.5rem', borderRadius:'0.25rem', fontFamily:'monospace', color:'var(--as)', background:'var(--abg)', border:'1px solid var(--abr)' }}>
           [DADO A SER INFORMADO]: {children}
         </code>
+      );
+    }
+
+    // ─── DADOS DO MÓDULO ADVOCACIA ────────────────────────────────
+    const AREAS_DIREITO = ['Cível','Trabalhista','Penal','Tributário','Administrativo','Previdenciário','Consumidor','Empresarial','Família e Sucessões','Constitucional'];
+    const POLOS = ['Autor / Requerente / Exequente','Réu / Requerido / Executado','Terceiro interessado'];
+    const FASES = ['Conhecimento (1º grau)','Sentença proferida','Recursal (2º grau)','Tribunais Superiores (STJ/STF)','Cumprimento de sentença / Execução'];
+    const TIPOS_PECA = [
+      'Petição inicial','Contestação','Réplica','Apelação','Contrarrazões de apelação',
+      'Agravo de instrumento','Recurso especial (STJ)','Recurso extraordinário (STF)',
+      'Embargos de declaração','Embargos à execução','Impugnação ao cumprimento de sentença',
+      'Razões finais / Memoriais','Petição interlocutória','Mandado de segurança',
+    ];
+
+    function buildAnalisePrompt(c) {
+      const area = c.area || '[ÁREA DO DIREITO]';
+      const polo = c.polo || '[POLO DO CLIENTE]';
+      const obj  = c.objetivo || 'mapear riscos, prazos e a melhor estratégia processual';
+      const trib = c.tribunais || 'Tribunais Superiores (STF/STJ) e, em seguida, o TJGO';
+      return `Atue como advogado(a) sênior com 20 anos de experiência em Direito ${area}, especialista em análise processual e estratégia recursal.
+
+<contexto>
+Cliente atua no polo: ${polo}.
+Fase processual: ${c.fase || '[INFORMAR]'}.
+Objetivo do cliente: ${obj}.
+Anexei o(s) PDF(s) dos autos a esta conversa.
+</contexto>
+
+<tarefa>
+Leia integralmente o(s) PDF(s) e produza um RELATÓRIO JURÍDICO ESTRATÉGICO com as seções abaixo. Extraia tudo dos autos; quando algo não constar, escreva "não consta nos autos".
+</tarefa>
+
+<estrutura>
+## 1. Identificação
+Número, vara/tribunal, partes, classe, assunto, valor da causa, distribuição, status atual.
+
+## 2. Cronologia processual
+Tabela: data | peça/ato | página/ID | conteúdo essencial | consequência processual. Destaque PRAZOS em curso e os URGENTES.
+
+## 3. Análise crítica das partes
+Pontos fortes e fragilidades de cada polo; qualidade das provas; adequação da via; nulidades/irregularidades; aderência a precedentes.
+
+## 4. Questões de mérito e processuais
+Liste cada questão controvertida com a posição de cada parte e o estado atual no processo.
+
+## 5. Síntese para a matriz estratégica
+Liste as 5–10 TESES jurídicas potencialmente cabíveis (a favor do cliente), cada uma com: fundamento legal, precedente de apoio (se houver nos autos) e risco preliminar.
+</estrutura>
+
+<regras>
+- Linguagem técnico-jurídica, formal e imparcial.
+- CITE TEXTUALMENTE os trechos relevantes, sempre com a fonte exata (página/ID).
+- Calcule e destaque prazos; sinalize o que é urgente.
+- Se o PDF estiver ilegível/incompleto, declare a limitação.
+- Priorize jurisprudência nesta hierarquia: ${trib}.
+- NÃO invente fatos, números, citações ou jurisprudência. Marque o que precisa de verificação.
+</regras>
+
+---
+⚙️ Modelo: Claude Opus 4.8 · Temperatura 0.2 · Top-p 0.85 · raciocínio estendido (analise os autos com profundidade).
+✅ Próximo passo: cole a "Síntese para a matriz estratégica" na Etapa 2 deste app.`;
+    }
+
+    function buildMatrizPrompt(c) {
+      const area = c.area || '[ÁREA DO DIREITO]';
+      const obj  = c.objetivo || 'maximizar a chance de êxito com o menor risco processual';
+      return `Atue como advogado(a) sênior estrategista em Direito ${area}.
+
+<contexto>
+Com base no relatório de análise dos autos já produzido (e nos PDFs anexados), construa uma MATRIZ ESTRATÉGICA de teses para decisão do cliente.
+Objetivo: ${obj}.
+</contexto>
+
+<tarefa>
+Apresente uma TABELA (matriz estratégica) com uma linha por tese e as colunas:
+| Tese | Fundamento legal | Precedente/jurisprudência | Força (1-5) | Risco (Baixo/Médio/Alto) | Probabilidade de êxito | Esforço | Peça processual cabível |
+
+Após a tabela:
+1. RANQUEIE as teses da mais recomendada à menos recomendada, justificando.
+2. Indique a COMBINAÇÃO ÓTIMA de teses para a peça (principais + subsidiárias).
+3. Aponte teses mutuamente excludentes ou que enfraqueçam umas às outras.
+4. Recomende a PEÇA PROCESSUAL e o rito a adotar.
+</tarefa>
+
+<regras>
+- Baseie cada linha em fundamento legal real e em jurisprudência (priorize STF/STJ e TJGO).
+- Seja honesto quanto a riscos; não superestime probabilidade de êxito.
+- NÃO invente precedentes; se não tiver certeza de um número de acórdão, marque "[verificar]".
+- Ao final, peça ao usuário que APROVE as teses escolhidas e a peça antes de redigir.
+</regras>
+
+---
+⚙️ Modelo: Claude Opus 4.8 · Temperatura 0.3 · Top-p 0.9 · raciocínio estendido.
+✅ Próximo passo: escolha as teses aprovadas e a peça, e use o botão "Gerar prompt da PEÇA" na Etapa 3.`;
+    }
+
+    function buildPecaPrompt(c) {
+      const area = c.area || '[ÁREA DO DIREITO]';
+      const tipo = c.tipoPeca || '[TIPO DE PEÇA]';
+      const teses = c.tesesAprovadas?.trim() || '[COLE AQUI AS TESES APROVADAS NA MATRIZ]';
+      return `Atue como advogado(a) sênior redator(a) de peças em Direito ${area}, com excelência em técnica processual e persuasão jurídica.
+
+<contexto>
+Os autos estão anexados (PDF) e a análise + matriz estratégica já foram aprovadas pelo cliente.
+Teses APROVADAS para esta peça:
+${teses}
+</contexto>
+
+<tarefa>
+Redija a seguinte peça, COMPLETA e pronta para protocolo: ${tipo}.
+Use exclusivamente os fatos dos autos e as teses aprovadas acima.
+</tarefa>
+
+<estrutura_da_peca>
+1. Endereçamento (juízo/tribunal competente).
+2. Qualificação das partes (extraia dos autos; marque [verificar] se faltar dado).
+3. Síntese dos fatos (com remissão a página/ID dos autos).
+4. Fundamentos jurídicos — um tópico por tese aprovada, com:
+   - subsunção fato→norma; dispositivos legais; jurisprudência (STF/STJ e TJGO, nesta ordem);
+   - citações doutrinárias quando pertinentes.
+5. Pedidos (claros, específicos, em itens; principais e subsidiários).
+6. Valor da causa, provas pretendidas, requerimentos finais.
+7. Fecho: local/data, advogado(a), OAB.
+</estrutura_da_peca>
+
+<formatacao>
+- Linguagem técnico-jurídica formal; parágrafos numerados quando ajudar.
+- Cite legislação e jurisprudência no padrão ABNT/forense.
+- NÃO invente jurisprudência: cada acórdão citado deve ser verificável; marque "[verificar]" se não tiver certeza.
+- Entregue a peça em TRÊS formatos, nesta ordem:
+  1) **DOCX** — gere o arquivo .docx pronto para download (fonte Times New Roman 12, espaçamento 1,5, recuo de 1ª linha, alinhamento justificado, margens ABNT).
+  2) **PDF** — exporte o mesmo conteúdo em .pdf com a mesma formatação.
+  3) **Google Docs** — forneça o conteúdo pronto para colar no Google Docs, preservando a hierarquia de títulos.
+</formatacao>
+
+<aprovacao>
+Antes de finalizar, liste em 3 linhas: peça, teses usadas e pedidos principais — e peça a CONFIRMAÇÃO do usuário. Só gere os arquivos após o "ok".
+</aprovacao>
+
+---
+⚙️ Modelo: Claude Opus 4.8 · Temperatura 0.2 · Top-p 0.85 · raciocínio estendido.
+⚠️ Revisão obrigatória por advogado(a) habilitado(a) antes do protocolo.`;
+    }
+
+    function Advocacia() {
+      const [c, setC] = useState({ area:'', polo:'', fase:'', objetivo:'', tribunais:'', tipoPeca:'', tesesAprovadas:'' });
+      const setC2 = (k,v) => setC(s => ({ ...s, [k]: v }));
+      const [copied, setCopied] = useState('');
+      const copy = async (txt, id) => {
+        try { await navigator.clipboard.writeText(txt); }
+        catch { const t=document.createElement('textarea'); t.value=txt; document.body.appendChild(t); t.select(); try{document.execCommand('copy');}catch{} document.body.removeChild(t); }
+        setCopied(id); setTimeout(()=>setCopied(''), 2000);
+      };
+      const sel = (label, k, opts) => (
+        <label style={{ display:'block', fontSize:'0.84rem', fontWeight:600, color:'var(--tx-m)', marginBottom:'0.25rem' }}>{label}
+          <select value={c[k]} onChange={e=>setC2(k,e.target.value)}
+            style={{ width:'100%', marginTop:'0.2rem', padding:'0.5rem 0.7rem', background:'var(--ibg)', border:'1px solid var(--brd)', borderRadius:'0.6rem', color:'var(--tx)', fontSize:'0.875rem', fontFamily:'inherit' }}>
+            <option value="">— selecione (ou deixe p/ a IA inferir) —</option>
+            {opts.map((o,i)=><option key={i} value={o}>{o}</option>)}
+          </select>
+        </label>
+      );
+      const txt = (label, k, ph) => (
+        <label style={{ display:'block', fontSize:'0.84rem', fontWeight:600, color:'var(--tx-m)', marginBottom:'0.25rem' }}>{label}
+          <input type="text" value={c[k]} onChange={e=>setC2(k,e.target.value)} placeholder={ph}
+            style={{ width:'100%', marginTop:'0.2rem', padding:'0.5rem 0.7rem', background:'var(--ibg)', border:'1px solid var(--brd)', borderRadius:'0.6rem', color:'var(--tx)', fontSize:'0.875rem', fontFamily:'inherit' }} />
+        </label>
+      );
+      const pecaLiberada = !!(c.tipoPeca && c.tesesAprovadas.trim());
+
+      const CopyBtn = ({ build, id, label }) => (
+        <button onClick={()=>copy(build(c), id)}
+          style={{ display:'flex', alignItems:'center', gap:'0.4rem', padding:'0.6rem 1rem', borderRadius:'0.6rem', border: copied===id?'1px solid var(--ok-br)':'none', background: copied===id?'var(--ok-bg)':`linear-gradient(to right,var(--af),var(--at))`, color: copied===id?'var(--ok)':'#fff', fontFamily:'inherit', fontSize:'0.84rem', fontWeight:600, cursor:'pointer', boxShadow: copied===id?'none':'0 6px 20px -8px var(--af)' }}>
+          {copied===id ? <><Check size={15} />Copiado!</> : <><ClipboardCopy size={15} />{label}</>}
+        </button>
+      );
+
+      return (
+        <div style={{ display:'flex', flexDirection:'column', gap:'0.75rem' }}>
+
+          <div style={{ padding:'0.875rem', background:'var(--abg)', border:'1px solid var(--abr)', borderRadius:'0.84rem', display:'flex', gap:'0.75rem' }}>
+            <Upload size={18} style={{ color:'var(--as)', flexShrink:0, marginTop:'0.1rem' }} />
+            <p style={{ margin:0, fontSize:'0.84rem', color:'var(--tx-m)', lineHeight:1.6 }}>
+              <strong style={{ color:'var(--as)' }}>Fluxo em 3 etapas (estilo RAG Advocacia).</strong> Responda o que souber abaixo (o resto a IA infere), copie cada prompt e cole no <strong>Claude.ai com o(s) PDF(s) dos autos anexados</strong>. Este app monta os prompts; a leitura dos autos e a geração dos arquivos são feitas pelo Claude.
+            </p>
+          </div>
+
+          {/* Questionário */}
+          <GuideCard icon={<FileSearch size={14} />} title="Questionário do caso">
+            {sel('Área do Direito','area',AREAS_DIREITO)}
+            {sel('Polo do cliente','polo',POLOS)}
+            {sel('Fase processual','fase',FASES)}
+            {txt('Objetivo do cliente','objetivo','Ex.: reverter a sentença; reduzir condenação; obter tutela de urgência...')}
+            {txt('Hierarquia de tribunais a priorizar','tribunais','Padrão: STF/STJ e depois TJGO')}
+          </GuideCard>
+
+          {/* Etapa 1 */}
+          <GuideCard icon={<FileSearch size={14} />} title="Etapa 1 · Análise do(s) processo(s)">
+            <p style={{ margin:0, fontSize:'0.84rem', color:'var(--tx-m)' }}>Anexe o(s) PDF(s) no Claude.ai e use este prompt para gerar o relatório jurídico estratégico e a síntese de teses.</p>
+            <CopyBtn build={buildAnalisePrompt} id="analise" label="Copiar prompt de ANÁLISE" />
+          </GuideCard>
+
+          {/* Etapa 2 */}
+          <GuideCard icon={<Grid3x3 size={14} />} title="Etapa 2 · Matriz estratégica de teses">
+            <p style={{ margin:0, fontSize:'0.84rem', color:'var(--tx-m)' }}>Gera a tabela de teses (força, risco, probabilidade) e o ranking para você escolher.</p>
+            <CopyBtn build={buildMatrizPrompt} id="matriz" label="Copiar prompt da MATRIZ" />
+          </GuideCard>
+
+          {/* Etapa 3 — peça */}
+          <GuideCard icon={<Gavel size={14} />} title="Etapa 3 · Elaboração da peça (após aprovar as teses)">
+            {sel('Tipo de peça a redigir','tipoPeca',TIPOS_PECA)}
+            <label style={{ display:'block', fontSize:'0.84rem', fontWeight:600, color:'var(--as)', marginBottom:'0.25rem' }}>Teses aprovadas (cole as escolhidas na matriz) *
+              <textarea value={c.tesesAprovadas} onChange={e=>setC2('tesesAprovadas',e.target.value)} placeholder="Ex.: 1) Nulidade da citação; 2) Prescrição da pretensão; 3) Cerceamento de defesa..."
+                style={{ width:'100%', marginTop:'0.2rem', height:'5rem', padding:'0.6rem 0.8rem', background:'var(--ibg)', border:'1px solid var(--brd)', borderRadius:'0.6rem', color:'var(--tx)', fontSize:'0.875rem', lineHeight:1.5, resize:'vertical', fontFamily:'inherit' }} />
+            </label>
+            <p style={{ margin:'0 0 0.2rem', fontSize:'0.8rem', color:'var(--tx-d)' }}>O botão libera após escolher a peça e colar as teses aprovadas. Saída em <strong>DOCX + PDF + Google Docs</strong>.</p>
+            {pecaLiberada ? (
+              <button onClick={()=>copy(buildPecaPrompt(c),'peca')}
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', padding:'0.8rem 1.25rem', borderRadius:'0.7rem', border: copied==='peca'?'1px solid var(--ok-br)':'none', background: copied==='peca'?'var(--ok-bg)':`linear-gradient(to right,var(--af),var(--at))`, color: copied==='peca'?'var(--ok)':'#fff', fontFamily:'inherit', fontSize:'0.9rem', fontWeight:700, cursor:'pointer', boxShadow: copied==='peca'?'none':'0 8px 22px -8px var(--af)' }}>
+                {copied==='peca' ? <><Check size={16} />Prompt da peça copiado!</> : <><FileSignature size={16} />Gerar prompt da PEÇA (DOCX·PDF·Docs)</>}
+              </button>
+            ) : (
+              <button disabled
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', padding:'0.8rem 1.25rem', borderRadius:'0.7rem', border:'1px solid var(--sbr)', background:'var(--sb)', color:'var(--tx-d)', fontFamily:'inherit', fontSize:'0.9rem', fontWeight:700, cursor:'not-allowed', opacity:0.6 }}>
+                <FileSignature size={16} />Gerar prompt da PEÇA (escolha a peça + teses)
+              </button>
+            )}
+          </GuideCard>
+
+          <p style={{ margin:0, fontSize:'0.8rem', color:'var(--tx-d)', lineHeight:1.6 }}>
+            ⚠️ Ferramenta de apoio. Toda peça e análise exigem revisão por advogado(a) habilitado(a) antes do protocolo. A IA pode errar citações — verifique a jurisprudência.
+          </p>
+        </div>
       );
     }
 
