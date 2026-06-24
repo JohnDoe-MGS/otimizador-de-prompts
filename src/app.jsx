@@ -5,7 +5,7 @@
       Palette, Shield, Loader2, RotateCcw, ArrowLeft,
       Lightbulb, AlertCircle, Layers, Sun, Moon, Download,
       Cpu, Thermometer, Brain, Sliders, Hash, Coins, Terminal, Bot, BookOpen, ExternalLink,
-      Globe, Users, Box, ClipboardCopy, Scale, Upload, FileSearch, Grid3x3, Gavel, FileSignature
+      Globe, Users, Box, ClipboardCopy, Scale, Upload, FileSearch, Grid3x3, Gavel, FileSignature, Repeat
     } from 'lucide-react';
 
     // ─── EXEMPLOS RÁPIDOS ─────────────────────────────────────────
@@ -323,9 +323,24 @@ Escreva os testes primeiro (TDD); confirme que falham; então implemente.
       return 'alta (exploratória)';
     }
 
+    function loopBlock(d) {
+      return `
+
+<self_improve_loop>
+Execute em ciclo iterativo, sem pedir confirmação entre as voltas:
+1. RASCUNHO: produza a primeira versão completa do entregável.
+2. AUTOCRÍTICA: avalie-a contra os Critérios de sucesso e os <requirements>, listando de 3 a 5 falhas concretas (clareza, precisão, completude, aderência ao escopo).
+3. REVISÃO: reescreva corrigindo cada falha apontada.
+4. Repita os passos 2–3 até que nenhuma falha relevante reste OU até 3 ciclos.
+5. Pare quando os critérios forem atendidos e informe: "✔ Critérios atendidos em N ciclo(s)".
+Entregue APENAS a versão final. Mostre o histórico de autocrítica só se eu pedir.
+</self_improve_loop>`;
+    }
+
     function toMarkdown(d) {
       const j = arr => arr.join('; ');
       const r = getRecommendations(d.domain);
+      const loop = d.loop ? loopBlock(d) : '';
       return `Atue como ${d.persona}.
 
 <task>
@@ -352,7 +367,7 @@ Critérios de sucesso: ${d.criterios}.
 
 <rules>
 Não invente dados nem PII. Não exceda o escopo. Se houver ambiguidade, liste as suposições antes de responder.
-</rules>
+</rules>${loop}
 
 ---
 ⚙️ CONFIG DA API — aplicar fora do prompt:
@@ -381,6 +396,7 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
       const [isProcessing, setProcessing] = useState(false);
       const [copied, setCopied]           = useState(false);
       const [exported, setExported]       = useState(false);
+      const [loopMode, setLoopMode]       = useState(false);
 
       const isDark = theme === 'dark';
 
@@ -421,17 +437,19 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); handleOptimize(); }
       };
 
+      const outDoc = optimized ? { ...optimized, loop: loopMode } : null;
+
       const handleCopy = async () => {
-        if (!optimized) return;
-        const md = toMarkdown(optimized);
+        if (!outDoc) return;
+        const md = toMarkdown(outDoc);
         try { await navigator.clipboard.writeText(md); }
         catch { const t = document.createElement('textarea'); t.value = md; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch {} document.body.removeChild(t); }
         setCopied(true); setTimeout(() => setCopied(false), 2000);
       };
 
       const handleExport = () => {
-        if (!optimized) return;
-        const md = toMarkdown(optimized);
+        if (!outDoc) return;
+        const md = toMarkdown(outDoc);
         const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -445,7 +463,7 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
       const recs = optimized ? getRecommendations(optimized.domain) : null;
 
       const wordCount = rawInput.trim() ? rawInput.trim().split(/\s+/).length : 0;
-      const tokenEst  = optimized ? Math.round(toMarkdown(optimized).length / 4) : 0;
+      const tokenEst  = outDoc ? Math.round(toMarkdown(outDoc).length / 4) : 0;
 
       const CSS = `
         .font-mont { font-family:'Montserrat',system-ui,-apple-system,sans-serif; }
@@ -484,6 +502,23 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
           .qf, .spin { animation: none !important; }
           .tr { transition: none !important; }
         }
+        .oip-main { max-width:56rem; margin:0 auto; padding:2rem 1rem; }
+        .oip-card { padding:1.5rem; }
+        .oip-tabs { gap:0.25rem; }
+        .oip-tab-label { display:inline; }
+        .oip-h1 { font-size:1.25rem; }
+        @media (max-width:640px) {
+          .oip-main { padding:1.1rem 0.7rem; }
+          .oip-card { padding:1rem; border-radius:0.9rem; }
+          .oip-tabs { gap:0.15rem; padding:0.2rem; }
+          .oip-tabs button { padding:0.55rem 0.4rem !important; }
+          .oip-tab-label { display:none; }
+          .oip-h1 { font-size:1.05rem; }
+          .oip-head-sub { font-size:0.78rem !important; }
+        }
+        @media (min-width:1100px) { .oip-main { max-width:62rem; } }
+        select, input, textarea { max-width:100%; }
+        table { display:block; overflow-x:auto; }
       `;
 
       return (
@@ -498,7 +533,7 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
               <div style={{ position:'absolute', bottom:'-10rem', left:'-10rem', width:'32rem', height:'32rem', borderRadius:'9999px', filter:'blur(80px)', background:'var(--amb2)' }} />
             </div>
 
-            <main style={{ position:'relative', maxWidth:'56rem', margin:'0 auto', padding:'2rem 1rem' }}>
+            <main className="oip-main" style={{ position:'relative' }}>
 
               {/* HEADER */}
               <header style={{ marginBottom:'2rem', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:'0.84rem' }}>
@@ -507,8 +542,8 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
                     <Sparkles size={20} color="#fff" strokeWidth={2.5} />
                   </div>
                   <div>
-                    <h1 style={{ margin:0, fontSize:'1.25rem', fontWeight:600, letterSpacing:'-0.02em', lineHeight:1.2 }}>Otimizador Imperativo de Prompts</h1>
-                    <div style={{ fontSize:'0.84rem', color:'var(--tx-m)' }}>Meta-Prompting Estruturado · 5 Seções</div>
+                    <h1 className="oip-h1" style={{ margin:0, fontWeight:600, letterSpacing:'-0.02em', lineHeight:1.2 }}>Otimizador Imperativo de Prompts</h1>
+                    <div className="oip-head-sub" style={{ fontSize:'0.84rem', color:'var(--tx-m)' }}>Meta-Prompting Estruturado · 5 Seções</div>
                   </div>
                 </div>
                 <button onClick={() => setTheme(t => t==='light'?'dark':'light')}
@@ -520,7 +555,7 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
               </header>
 
               {/* TABS */}
-              <div role="tablist" aria-label="Seções" style={{ display:'flex', gap:'0.25rem', padding:'0.25rem', marginBottom:'1.25rem', background:'var(--card)', border:'1px solid var(--brd)', borderRadius:'0.84rem', backdropFilter:'blur(8px)' }}>
+              <div role="tablist" aria-label="Seções" className="oip-tabs" style={{ display:'flex', padding:'0.25rem', marginBottom:'1.25rem', background:'var(--card)', border:'1px solid var(--brd)', borderRadius:'0.84rem', backdropFilter:'blur(8px)' }}>
                 {[['input',<FileText size={16} />,'Entrada',false],['output',<Layers size={16} />,'Prompt',true],['advocacia',<Scale size={16} />,'Advocacia',false],['claude',<Brain size={16} />,'Claude & Code',false]].map(([key,icon,label,needsOpt]) => {
                   const disabled = needsOpt && !optimized;
                   const selected = activeTab===key && !disabled;
@@ -531,14 +566,14 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
                               ...(selected
                                 ? { background:`linear-gradient(to right,var(--af),var(--at))`, color:'#fff', boxShadow:'0 6px 20px -8px var(--af)' }
                                 : { background:'transparent', color:'var(--tx-m)' }) }}>
-                      {icon}{label}
+                      {icon}<span className="oip-tab-label">{label}</span>
                     </button>
                   );
                 })}
               </div>
 
               {/* MAIN CARD */}
-              <div style={{ background:'var(--card)', border:'1px solid var(--brd)', borderRadius:'1rem', padding:'1.5rem', backdropFilter:'blur(12px)', boxShadow: isDark ? '0 25px 50px -12px rgba(0,0,0,.5)' : '0 25px 50px -12px rgba(0,0,0,.08)' }}>
+              <div className="oip-card" style={{ background:'var(--card)', border:'1px solid var(--brd)', borderRadius:'1rem', backdropFilter:'blur(12px)', boxShadow: isDark ? '0 25px 50px -12px rgba(0,0,0,.5)' : '0 25px 50px -12px rgba(0,0,0,.08)' }}>
 
                 {activeTab === 'advocacia' ? (
                   <Advocacia />
@@ -656,6 +691,22 @@ Modelo: ${r.modelo} · Temperatura: ${r.temperatura} (criatividade ${nivelCriati
                         </button>
                       </div>
                     </div>
+
+                    {/* Loop Engineering toggle */}
+                    <button onClick={() => setLoopMode(v => !v)} aria-pressed={loopMode}
+                            style={{ width:'100%', marginBottom:'1rem', textAlign:'left', display:'flex', alignItems:'flex-start', gap:'0.6rem', padding:'0.75rem 0.875rem', borderRadius:'0.7rem', cursor:'pointer', fontFamily:'inherit', background: loopMode ? 'var(--abg)' : 'var(--sb)', border:'1px solid '+(loopMode ? 'var(--abr)' : 'var(--sbr)'), transition:'all 150ms' }}>
+                      <div style={{ flexShrink:0, width:'2.1rem', height:'1.25rem', borderRadius:'9999px', padding:'2px', background: loopMode ? 'linear-gradient(to right,var(--af),var(--at))' : 'var(--sbr)', transition:'background 150ms' }}>
+                        <div style={{ width:'1rem', height:'1rem', borderRadius:'9999px', background:'#fff', transform: loopMode ? 'translateX(0.85rem)' : 'translateX(0)', transition:'transform 150ms' }} />
+                      </div>
+                      <div>
+                        <div style={{ display:'flex', alignItems:'center', gap:'0.35rem', fontSize:'0.86rem', fontWeight:700, color: loopMode ? 'var(--as)' : 'var(--tx)' }}>
+                          <Repeat size={14} />Loop Engineering {loopMode ? '· ativo' : ''}
+                        </div>
+                        <div style={{ fontSize:'0.8rem', color:'var(--tx-m)', lineHeight:1.5, marginTop:'0.15rem' }}>
+                          Anexa um ciclo de auto-refino (rascunho → autocrítica → revisão, até 3 voltas) para a IA melhorar a própria resposta antes de entregar.
+                        </div>
+                      </div>
+                    </button>
 
                     {/* 4 Quadrantes */}
                     <div style={{ display:'flex', flexDirection:'column', gap:'0.84rem' }}>
